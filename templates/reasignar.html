@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <title>Document</title>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg" style="background: linear-gradient(to right, #B48C00, #1E4F91);">
+        <div class="container-fluid">
+            <!-- Logo de la institución -->
+            <a class="navbar-brand d-flex align-items-center" href="#">
+                <img src="/static/Escudo_de_la_UNAH.svg.png" alt="Logo" width="50" height="75" class="me-2">
+                <span class="text-white fw-bold">Reasignar Computadoras</span>
+            </a>
+    
+            
+    
+            <!-- Botón de Cerrar Sesión -->
+            <button class="btn btn-outline-light" id="logoutBtn">
+                <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+            </button>
+        </div>
+    </nav>
+    <div class="container mt-4">
+       
+    
+        <form id="reasignarForm" class="p-4 bg-light rounded shadow">
+            <!-- Información del equipo -->
+            <div class="card mb-3">
+                <div class="card-header bg-dark text-white text-center">
+                    <h4 class="mb-0">I. Información del Equipo</h4>
+                </div>
+                <div class="card-body row">
+                    <div class="col-md-6">
+                        <label>Tipo de Equipo:</label>
+                        <input type="text" name="tipo_equipo" class="form-control form-control-lg" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label>Nomenclatura:</label>
+                        <input type="text" name="nomenclatura" class="form-control form-control-lg" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label>Service TAG:</label>
+                        <input type="text" name="service_tag" class="form-control form-control-lg" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label>Serie:</label>
+                        <input type="text" name="serie" class="form-control form-control-lg" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label>Marca:</label>
+                        <input type="text" name="marca" class="form-control form-control-lg" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label>Modelo:</label>
+                        <input type="text" name="modelo" class="form-control form-control-lg" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label>Número de Inventario:</label>
+                        <input type="text" name="inventario" class="form-control form-control-lg" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label>Fecha de Traslado:</label>
+                        <input type="date" name="fecha_traslado" class="form-control form-control-lg" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label>Propiedad:</label>
+                        <select name="propiedad" class="form-control form-control-lg" required>
+                            <option value="Leasing">Leasing</option>
+                            <option value="Propio">Propio</option>
+                        </select>
+                    </div>
+                    <div class="col-md-12">
+                        <label>Componentes o Accesorios Entregados:</label>
+                        <textarea name="accesorios" class="form-control form-control-lg" rows="3"></textarea>
+                    </div>
+                    <div class="col-md-12">
+                        <label>Observaciones:</label>
+                        <textarea name="observaciones" class="form-control form-control-lg" rows="3"></textarea>
+                    </div>
+                </div>
+            </div>
+    
+            <!-- Información del usuario emisor -->
+            <div class="card mb-3">
+                <div class="card-header bg-primary text-white text-center">
+                    <h4 class="mb-0">II. Información Usuario Emisor</h4>
+                </div>
+                <div class="card-body row">
+                    <div class="col-md-6">
+                        <label>Unidad/Depto:</label>
+                        <input type="text" name="unidad_emisor" class="form-control form-control-lg" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label>Responsable que entrega:</label>
+                        <input type="text" name="responsable_emisor" class="form-control form-control-lg" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label>Correo Institucional:</label>
+                        <input type="email" name="correo_emisor" class="form-control form-control-lg" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label>Número de Empleado:</label>
+                        <input type="text" name="empleado_emisor" class="form-control form-control-lg" required>
+                    </div>
+                    <div class="col-md-12">
+                        <label>Ubicación Física:</label>
+                        <input type="text" name="ubicacion_emisor" class="form-control form-control-lg" required>
+                    </div>
+                </div>
+            </div>
+    
+            <!-- Información del usuario receptor -->
+            <div class="card mb-3">
+                <div class="card-header bg-success text-white text-center">
+                    <h4 class="mb-0">III. Información Usuario Receptor</h4>
+                </div>
+                <div class="card-body row">
+                    <div class="col-md-6">
+                        <label>Unidad/Depto:</label>
+                        <input type="text" name="unidad_receptor" class="form-control form-control-lg" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label>Responsable que recibe:</label>
+                        <input type="text" name="responsable_receptor" class="form-control form-control-lg" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label>Correo Institucional:</label>
+                        <input type="email" name="correo_receptor" class="form-control form-control-lg" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label>Número de Empleado:</label>
+                        <input type="text" name="empleado_receptor" class="form-control form-control-lg" required>
+                    </div>
+                    <div class="col-md-12">
+                        <label>Ubicación Física:</label>
+                        <input type="text" name="ubicacion_receptor" class="form-control form-control-lg" required>
+                    </div>
+                </div>
+            </div>
+    
+            <!-- Botones -->
+            <div class="mt-4 text-center">
+                <button type="submit" class="btn btn-success btn-lg">
+                    <i class="fas fa-save"></i> Guardar
+                </button>
+                <a id="btnDescargarPDF" class="btn btn-danger btn-lg" href="#" style="display: none;">
+                    <i class="fas fa-file-pdf"></i> Descargar PDF
+                </a>
+                <a id="btnDescargarWord" class="btn btn-primary btn-lg" href="#" style="display: none;">
+                    <i class="fas fa-file-word"></i> Descargar Word
+                </a>
+            </div>
+        </form>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+document.getElementById("reasignarForm").addEventListener("submit", function(event) {
+    event.preventDefault(); // Evita el envío tradicional del formulario
+
+    // Obtener los datos del formulario
+    let formData = new FormData(this);
+    
+    // Convertir FormData a JSON
+    let jsonData = {};
+    formData.forEach((value, key) => {
+        jsonData[key] = value;
+    });
+
+    // Enviar datos al backend con Fetch API
+    fetch("/reasignar", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(jsonData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log("Respuesta del servidor:", data); // Depuración en consola
+
+        if (data.success) {
+            alert("Reasignación guardada exitosamente.");
+
+            // Guardamos el ID de la última reasignación
+            let reasignacionID = data.id;
+
+            if (reasignacionID) {
+                console.log("Se ha generado la reasignación con ID:", reasignacionID);
+                
+                // Habilitar el botón de Descargar PDF con el ID correcto
+                let pdfButton = document.getElementById("btnDescargarPDF");
+                pdfButton.href = `/generar_pdf/${reasignacionID}`;
+                pdfButton.style.display = "inline"; // Mostrar el botón
+
+
+                // Habilitar el botón de Descargar Word con el ID correcto
+                let wordButton = document.getElementById("btnDescargarWord");
+                wordButton.href = `/generar_word/${reasignacionID}`;
+                wordButton.style.display = "inline"; // Mostrar el botón
+
+
+
+
+            } else {
+                console.error("Error: No se recibió un ID válido del backend.");
+            }
+
+        } else {
+            alert("Error al guardar la reasignación.");
+        }
+    })
+    .catch(error => {
+        console.error("Error:", error);
+        alert("Error en la solicitud.");
+    });
+});
+    </script>
+    <footer class="footer mt-auto py-3" style="background: linear-gradient(to right, #B48C00, #1E4F91);">
+        <div class="container text-center text-white">
+            <p class="mb-1">&copy; 2025 <strong>INVENTARIO UNAH</strong>. Todos los derechos reservados.</p>
+            <p class="mb-1">Desarrollado por <strong>Fabiel Ivan Vasquez Mendoza</strong>.</p>
+            <p class="mb-1">
+                Contáctanos: 
+                <a href="mailto:fabielvasques52gmail.com" class="text-white fw-bold">fabielvasques52@gmail.com</a> | 
+                Teléfono: <span class="fw-bold">+504 9516-6590</span>
+            </p>
+        </div>
+    </footer>
+    
+</body>
+</html>
+

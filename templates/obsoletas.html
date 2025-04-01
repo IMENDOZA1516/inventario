@@ -1,0 +1,106 @@
+
+
+{% block content %}
+
+  <!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Computadoras Obsoletas</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg" style="background: linear-gradient(to right, #B48C00, #1E4F91);">
+        <div class="container-fluid">
+            <!-- Logo de la institución -->
+            <a class="navbar-brand d-flex align-items-center" href="#">
+                <img src="/static/Escudo_de_la_UNAH.svg.png" alt="Logo" width="50" height="75" class="me-2">
+                <span class="text-white fw-bold">Computadoras Obsoletas</span>
+            </a>
+    
+            
+    
+            <!-- Botón de Cerrar Sesión -->
+            <button class="btn btn-outline-light" id="logoutBtn">
+                <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+            </button>
+        </div>
+    </nav>
+
+
+
+    <div class="container mt-4">
+        <!-- Botón para regresar al Dashboard -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="text-danger">Computadoras Obsoletas</h2>
+            <a href="/dashboard" class="btn btn-primary">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-left" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd" d="M5.854 4.146a.5.5 0 0 1 0 .708L2.707 8l3.147 3.146a.5.5 0 0 1-.708.708l-3.5-3.5a.5.5 0 0 1 0-.708l3.5-3.5a.5.5 0 0 1 .708 0z"/>
+                    <path fill-rule="evenodd" d="M10.5 8a.5.5 0 0 1-.5.5H3a.5.5 0 0 1 0-1h7a.5.5 0 0 1 .5.5z"/>
+                </svg>
+                Volver al Dashboard
+            </a>
+        </div>
+
+        <!-- Contenedor de computadoras obsoletas -->
+        <div class="row" id="obsoletasList"></div>
+    </div>
+
+    <!-- Bootstrap JS -->
+
+   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Cargar computadoras obsoletas
+        function cargarComputadorasObsoletas() {
+            fetch('/computadoras/obsoletas')
+            .then(response => response.json())
+            .then(data => {
+                const lista = document.getElementById('obsoletasList');
+                lista.innerHTML = ''; // Limpiar antes de agregar nuevas tarjetas
+
+                if (data.length === 0) {
+                    lista.innerHTML = `<div class="col-12 text-center"><p class="text-muted">No hay computadoras obsoletas registradas.</p></div>`;
+                }
+
+                data.forEach(comp => {
+                    const card = `
+                        <div class="col-md-4 mb-3">
+                            <div class="card shadow-sm border-danger">
+                                <div class="card-body">
+                                    <h5 class="card-title text-danger">${comp.numero_inventario}</h5>
+                                    <p><strong>Estado:</strong> ${comp.estado}</p>
+                                    <p><strong>Departamento:</strong> ${comp.departamento}</p>
+                                    <p><strong>Ubicación Campus:</strong> ${comp.ubicacion_campus}</p>
+                                    <p><strong>Monitor:</strong> ${comp.monitor}</p>
+                                    <p><strong>Teclado:</strong> ${comp.teclado}</p>
+                                    <p class="text-danger"><strong>Obsoleta</strong></p>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    lista.innerHTML += card;
+                });
+            })
+            .catch(error => console.error('Error al cargar computadoras obsoletas:', error));
+        }
+
+        // Llamar la función cuando se cargue la página
+        document.addEventListener('DOMContentLoaded', cargarComputadorasObsoletas);
+    </script>
+*/
+    <footer class="footer mt-auto py-3" style="background: linear-gradient(to right, #B48C00, #1E4F91);">
+        <div class="container text-center text-white">
+            <p class="mb-1">&copy; 2025 <strong>INVENTARIO UNAH</strong>. Todos los derechos reservados.</p>
+            <p class="mb-1">Desarrollado por <strong>Fabiel Ivan Vasquez Mendoza</strong>.</p>
+            <p class="mb-1">
+                Contáctanos: 
+                <a href="mailto:fabielvasques52gmail.com" class="text-white fw-bold">fabielvasques52@gmail.com</a> | 
+                Teléfono: <span class="fw-bold">+504 9516-6590</span>
+            </p>
+        </div>
+    </footer>
+    
+</body>
+</html>
+{% endblock %}

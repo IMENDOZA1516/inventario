@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Componentes Obsoletos</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg" style="background: linear-gradient(to right, #B48C00, #1E4F91);">
+        <div class="container-fluid">
+            <a class="navbar-brand d-flex align-items-center" href="/dashboard">
+                <img src="/static/Escudo_de_la_UNAH.svg.png" alt="Logo" width="50" height="75" class="me-2">
+                <span class="text-white fw-bold">Inventario de Accesorios Obsoletos</span>
+            </a>
+            <button class="btn btn-outline-light" onclick="cerrarSesion()">
+                <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+            </button>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <h2 class="mb-4">Historial de Componentes Obsoletos</h2>
+        <div class="table-responsive">
+            <table class="table table-striped table-bordered shadow">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Tipo de Componente</th>
+                        <th>Número de Inventario</th>
+                        <th>Modelo</th>
+                        <th>Motivo</th>
+                        <th>Fecha Marcado</th>
+                        <th>Computadora Asignada</th>
+                    </tr>
+                </thead>
+                <tbody id="tablaComponentesObsoletos">
+                    <!-- Aquí se cargarán dinámicamente los datos -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        function cargarComponentesObsoletos() {
+            fetch('/componentes_obsoletos')
+            .then(response => response.json())
+            .then(data => {
+                const tabla = document.getElementById('tablaComponentesObsoletos');
+                tabla.innerHTML = '';
+
+                if (data.length === 0) {
+                    tabla.innerHTML = `<tr><td colspan="6" class="text-center text-muted">No hay componentes obsoletos registrados.</td></tr>`;
+                }
+
+                data.forEach(comp => {
+                    const fila = `
+                        <tr>
+                            <td>${comp.tipo_componente}</td>
+                            <td>${comp.inventario || 'N/A'}</td>
+                            <td>${comp.modelo || 'N/A'}</td>
+                            <td>${comp.motivo}</td>
+                            <td>${comp.fecha_marcado}</td>
+                         
+                            <td>${comp.numero_inventario_computadora}</td>
+                        </tr>
+                    `;
+                    tabla.innerHTML += fila;
+                });
+            })
+            .catch(error => console.error('Error al cargar componentes obsoletos:', error));
+        }
+
+        function cerrarSesion() {
+            fetch('/logout', { method: 'GET' })
+            .then(() => window.location.href = "/login");
+        }
+
+        document.addEventListener('DOMContentLoaded', cargarComponentesObsoletos);
+    </script>
+</body>
+</html>

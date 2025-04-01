@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Empleados</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-4">
+        <h2>Empleados</h2>
+        <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#addEmployeeModal">
+            Agregar Empleado
+        </button>
+    </div>
+
+    <!-- Modal empleado -->
+    <div class="modal fade" id="addEmployeeModal" tabindex="-1" aria-labelledby="addEmployeeModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form id="addEmployeeForm">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Agregar Nuevo Empleado</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">Nombre</label>
+                            <input type="text" class="form-control" id="nombreEmpleado" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Correo</label>
+                            <input type="email" class="form-control" id="emailEmpleado" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Puesto</label>
+                            <input type="text" class="form-control" id="puestoEmpleado" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Campus</label>
+                            <input type="text" class="form-control" id="campusEmpleado" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Contraseña del Usuario</label>
+                            <input type="password" class="form-control" id="passwordEmpleado" required>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-success">Agregar</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

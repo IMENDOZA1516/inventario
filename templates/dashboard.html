@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Inventario de Computadoras</title>
+  <!-- <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">-->   
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"> 
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="/static/styles.css">
+     
+</head>
+<body class="bg-light">
+
+
+    <nav class="navbar navbar-expand-lg" style="background: linear-gradient(to right, #B48C00, #1E4F91);">
+        <div class="container-fluid">
+            <!-- Logo de la institución -->
+            <a class="navbar-brand d-flex align-items-center" href="#">
+                <img src="/static/Escudo_de_la_UNAH.svg.png" alt="Logo" width="50" height="75" class="me-2">
+                <span class="text-white fw-bold">Inventario de Computadoras</span>
+            </a>
+    
+            <!-- Rol del usuario -->
+            <span class="text-white me-3">Rol: {{ rol }}</span>
+    
+            <!-- Botón de Cerrar Sesión -->
+            <button class="btn btn-outline-light" id="logoutBtn">
+                <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+            </button>
+            
+            <div class="form-check form-switch ms-3">
+                <input class="form-check-input" type="checkbox" id="darkModeSwitch">
+                <label class="form-check-label" for="darkModeSwitch">
+                  <i class="bi bi-moon-fill"></i> Modo Oscuro
+                </label>
+              </div>
+        </div>
+    </nav>
+
+
+
+    
+    <div class="container mt-4">
+        <!-- Botón para abrir el modal de agregar empleado -->
+        <h2 class="mb-4">Lista de Computadoras</h2>
+
+<!-- Contenedor principal de botones -->
+<div class="container-fluid mb-4">
+    <!-- Primera fila: Botones principales -->
+    <div class="d-flex flex-wrap justify-content-between mb-3">
+        <!-- Grupo de acciones principales -->
+        <div class="btn-group" role="group" aria-label="Acciones principales">
+            <button id="btnAgregarComputadora" class="btn btn-primary me-2" data-bs-toggle="modal" data-bs-target="#addComputerModal">
+                <i class="bi bi-pc-display me-2"></i>Agregar Computadora
+            </button>
+            <button id="btnReasignarComputadora" class="btn btn-warning me-2" onclick="window.location.href='/reasignar'">
+                <i class="bi bi-arrow-repeat me-2"></i>Reasignar
+            </button>
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addEmployeeModal">
+                <i class="bi bi-person-plus me-2"></i>Agregar Empleado
+            </button>
+        </div>
+        
+        <!-- Grupo de visualización -->
+        <div class="btn-group" role="group" aria-label="Visualización">
+            <button id="btnVerObsoletas" class="btn btn-secondary me-2" onclick="window.location.href='/obsoletas'">
+                <i class="bi bi-eye-fill me-2"></i>Obsoletas
+            </button>
+            <button class="btn btn-secondary me-2" onclick="window.location.href='/componentes_obsoletos_page'">
+                <i class="bi bi-cpu me-2"></i>Componentes
+            </button>
+            <button id="btnVerEliminadas" class="btn btn-dark" onclick="window.location.href='/eliminadas'">
+                <i class="bi bi-archive-fill me-2"></i>Eliminadas
+            </button>
+        </div>
+    </div>
+    
+    
+</div>
+
+
+
+
+
+
+</button>
+          <div class="d-flex justify-content-end p-3">
+            <button class="btn btn-danger" onclick="descargarPDF()">Descargar PDF</button>
+            <button class="btn btn-success" onclick="descargarExcel()">Descargar Excel</button>
+
+        </div>
+
+        <div class="d-flex justify-content-center">
+            <input type="text" id="searchInput" class="form-control w-50" placeholder="Buscar por número de inventario o nombre del empleado">
+        </div>
+        
+
+        <div class="container mt-4">
+            <div class="row" id="computadorasList"></div>
+        </div>
+        <div id="computadorasList" class="row"></div>
+    </div>
+  <!-- Filtro por tipo de propiedad -->
+  <div class="container mt-4">
+      <!-- Sección de Filtro -->
+      <div class="d-flex justify-content-between align-items-center mb-3">
+          <h4 class="text-primary">Filtrar Computadoras</h4>
+          <div class="input-group w-50">
+              <span class="input-group-text bg-primary text-white">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-funnel" viewBox="0 0 16 16">
+                      <path d="M1.5 1.5A1 1 0 0 1 2.5 1h11a1 1 0 0 1 .8 1.6l-3.1 4.6V11a1 1 0 0 1-.3.7l-3 3a1 1 0 0 1-1.4 0l-3-3a1 1 0 0 1-.3-.7V7.1L1.7 2.6A1 1 0 0 1 1.5 1.5z"/>
+                  </svg>
+              </span>
+              <select id="filtroTipo" class="form-select">
+                  <option value="">Todas</option>
+                  <option value="Propia">Propia</option>
+                  <option value="Alquilada">Alquilada</option>
+              </select>
+          </div>
+      </div>
+  
+      <!-- Tabla de Computadoras -->
+      <div class="table-responsive">
+          <table class="table table-hover table-striped border rounded shadow">
+              <thead class="table-dark">
+                  <tr>
+                      <th>Número de Inventario</th>
+                      <th>Estado</th>
+                      <th>Departamento</th>
+                      <th>Ubicación</th>
+                      <th>Monitor</th>
+                      <th>Teclado</th>
+                      <th>Tipo de Propiedad</th>
+                      <th>Empleado</th>
+                  </tr>
+              </thead>
+              <tbody id="tablaComputadoras">
+                  <!-- Aquí se insertarán las computadoras filtradas -->
+              </tbody>
+          </table>
+      </div>
+  </div>
+        
+    
+   
+<!-- Modal para agregar/editar computadora -->
+<div class="modal fade" id="addComputerModal" tabindex="-1" aria-labelledby="addComputerModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="addComputerForm">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalTitle">Agregar Nueva Computadora</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="computerId"> <!-- Campo oculto para identificar si es edición -->
+
+                    <!-- Sección: Información de la Computadora -->
+                    <h5 class="text-primary">I. Información de la Computadora</h5>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Número de Inventario</label>
+                        <input type="text" class="form-control" id="numeroInventario" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Ubicación Campus</label>
+                        <input type="text" class="form-control" id="ubicacionCampus" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Departamento</label>
+                        <input type="text" class="form-control" id="departamento" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Monitor</label>
+                        <input type="text" class="form-control" id="monitor" required>
+                        <div class="form-check mt-1">
+                            <input class="form-check-input" type="checkbox" id="monitorObsoleto">
+                            <label class="form-check-label" for="monitorObsoleto">Marcar monitor como obsoleto</label>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Teclado</label>
+                        <input type="text" class="form-control" id="teclado" required>
+                        <div class="form-check mt-1">
+                            <input class="form-check-input" type="checkbox" id="tecladoObsoleto">
+                            <label class="form-check-label" for="tecladoObsoleto">Marcar teclado como obsoleto</label>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Tipo de Propiedad</label>
+                        <select class="form-control" id="tipoPropiedad" required>
+                            <option value="Propia">Propia</option>
+                            <option value="Alquilada">Alquilada</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Estado</label>
+                        <select class="form-control" id="estado" required>
+                            <option value="Disponible">Disponible</option>
+                            <option value="Asignada">Asignada</option>
+                        </select>
+                    </div>
+
+                    <!-- Sección: Información del Empleado -->
+                <div id="empleadoFields"> 
+                    <h5 class="text-success mt-4">II. Asignar a un Empleado Existente</h5>
+                    <div class="mb-3">
+                        <label class="form-label">Seleccionar Empleado</label>
+                        <select id="empleadoSelect" class="form-select" required>
+                            <option value="">Selecciona un empleado...</option>
+                            <!-- Se cargará dinámicamente con JS -->
+                        </select>
+                    </div>
+                </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">Guardar Computadora</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<!-- Modal empleado -->
+<div class="modal fade" id="addEmployeeModal" tabindex="-1" aria-labelledby="addEmployeeModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="addEmployeeForm">
+                <div class="modal-header">
+                    <h5 class="modal-title">Agregar Nuevo Empleado</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Nombre</label>
+                        <input type="text" class="form-control" id="nombreEmpleado" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Correo</label>
+                        <input type="email" class="form-control" id="emailEmpleado" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Puesto</label>
+                        <input type="text" class="form-control" id="puestoEmpleado" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Campus</label>
+                        <input type="text" class="form-control" id="campusEmpleado" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Contraseña del Usuario</label>
+                        <input type="password" class="form-control" id="passwordEmpleado" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-success">Agregar</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+
+    <!-- Bootstrap y JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // ✅ Función para cargar computadoras según el rol
+function cargarComputadoras() {
+    fetch('/computadoras')
+    .then(response => response.json())
+    .then(data => {
+        const lista = document.getElementById('computadorasList');
+        lista.innerHTML = '';
+
+        fetch('/obtener_rol')
+        .then(response => response.json())
+        .then(userData => {
+            const userRole = userData.rol;
+            const userId = userData.id;
+
+            let computadorasAMostrar = (userRole === "admin") 
+                ? data 
+                : data.filter(comp => comp.empleado_id === userId);
+
+            computadorasAMostrar.forEach(comp => {
+                const empleadoInfo = comp.empleado ? `
+                    <p><strong>Empleado:</strong> ${comp.empleado.nombre}</p>
+                    <p><strong>Email:</strong> ${comp.empleado.email}</p>
+                ` : `<p><strong>Empleado:</strong> No asignado</p>`;
+
+                const botonesAdmin = (userRole === "admin") ? `
+                    <button class="btn btn-warning" onclick="editarComputadora(${comp.id})">Editar</button>
+                    <button class="btn btn-danger" onclick="eliminarComputadora(${comp.id})">Eliminar</button>
+                    <button class="btn btn-secondary" onclick="marcarObsoleta(${comp.id})">Obsoleta</button>
+                ` : '';
+
+                const card = `
+                    <div class="col-md-4 mb-3">
+                        <div class="card shadow-sm">
+                            <div class="card-body">
+                                <h5 class="card-title">${comp.numero_inventario}</h5>
+                                <p><strong>Estado:</strong> ${comp.estado}</p>
+                                <p><strong>Departamento:</strong> ${comp.departamento}</p>
+                                <p><strong>Ubicación:</strong> ${comp.ubicacion_campus}</p>
+                                <p><strong>Monitor:</strong> ${comp.monitor ?? 'N/A'}</p>
+                                <p><strong>Teclado:</strong> ${comp.teclado ?? 'N/A'}</p>
+                                <p><strong>Tipo de Propiedad:</strong> ${comp.tipo_propiedad}</p>
+                                ${empleadoInfo}
+                                ${botonesAdmin}
+                            </div>
+                        </div>
+                    </div>
+                `;
+                lista.innerHTML += card;
+            });
+        });
+    });
+}
+
+document.getElementById('addComputerForm').addEventListener('submit', function(event) {
+    event.preventDefault();
+
+    const id = document.getElementById('computerId').value;
+
+    const data = {
+        numero_inventario: document.getElementById('numeroInventario').value,
+        ubicacion_campus: document.getElementById('ubicacionCampus').value,
+        departamento: document.getElementById('departamento').value,
+        estado: document.getElementById('estado').value,
+        tipo_propiedad: document.getElementById('tipoPropiedad').value,
+        monitor: document.getElementById('monitorObsoleto').checked ? null : document.getElementById('monitor').value.trim(),
+        teclado: document.getElementById('tecladoObsoleto').checked ? null : document.getElementById('teclado').value.trim(),
+        monitor_obsoleto: document.getElementById('monitorObsoleto').checked,
+        teclado_obsoleto: document.getElementById('tecladoObsoleto').checked,
+        empleado_id: document.getElementById('empleadoSelect').value || null,  // 👈 aquí el cambio clave
+    };
+
+    if (id) {
+        fetch(`/computadoras/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        })
+        .then(response => {
+            if (response.ok) {
+                alert('Computadora actualizada correctamente');
+                document.getElementById('addComputerForm').reset();
+                cargarComputadoras();
+                bootstrap.Modal.getInstance(document.getElementById('addComputerModal')).hide();
+            } else {
+                alert('Error al actualizar la computadora');
+            }
+        })
+        .catch(error => console.error('Error al actualizar:', error));
+    } else {
+        fetch('/computadoras', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        })
+        .then(response => {
+            if (response.ok) {
+                alert('Computadora agregada correctamente');
+                document.getElementById('addComputerForm').reset();
+                cargarComputadoras();
+                bootstrap.Modal.getInstance(document.getElementById('addComputerModal')).hide();
+            } else {
+                alert('Error al agregar la computadora');
+            }
+        })
+        .catch(error => console.error('Error al agregar:', error));
+    }
+});
+
+//----- funcion para abrir el modal de cumputadora
+
+function abrirModalAgregarComputadora() {
+    console.log("📌 Abriendo modal de computadora...");
+
+    // Configuración inicial del modal
+    document.getElementById('modalTitle').textContent = 'Agregar Nueva Computadora';
+    document.querySelector('#addComputerForm button[type="submit"]').textContent = 'Guardar Computadora';
+    document.getElementById('addComputerForm').reset();
+    document.getElementById('computerId').value = '';
+
+    // Obtener referencia al modal
+    const modalElement = document.getElementById('addComputerModal');
+    const modal = new bootstrap.Modal(modalElement);
+
+    // Evento que se dispara cuando el modal está completamente visible
+    modalElement.addEventListener('shown.bs.modal', function() {
+        console.log("🔄 Modal completamente visible, cargando empleados...");
+        cargarEmpleados();
+    });
+
+    // Mostrar el modal
+    modal.show();
+}
+
+
+// ✅ Eliminar computadora
+function eliminarComputadora(id) {
+    if (confirm('¿Seguro que quieres eliminar esta computadora?')) {
+        fetch(`/computadoras/${id}`, { method: 'DELETE' })
+        .then(response => {
+            if (response.ok) {
+                alert('Computadora eliminada');
+                cargarComputadoras();
+            } else {
+                alert('Error al eliminar');
+            }
+        });
+    }
+}
+// ✅ Editar computadora 
+function editarComputadora(id) {
+    fetch(`/computadoras/${id}`)
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            alert(data.error);
+            return;
+        }
+
+        // 🔹 Cambiar título y botón del modal
+        document.getElementById('modalTitle').textContent = 'Editar Computadora';
+        document.querySelector('#addComputerForm button[type="submit"]').textContent = 'Guardar Cambios';
+
+        // 🔹 Llenar el formulario con los datos obtenidos
+        document.getElementById('computerId').value = data.id;
+        document.getElementById('numeroInventario').value = data.numero_inventario;
+        document.getElementById('ubicacionCampus').value = data.ubicacion_campus;
+        document.getElementById('departamento').value = data.departamento;
+        document.getElementById('estado').value = data.estado;
+        document.getElementById('tipoPropiedad').value = data.tipo_propiedad;
+        document.getElementById('monitor').value = data.monitor || '';
+        document.getElementById('teclado').value = data.teclado || '';
+        document.getElementById('monitorObsoleto').checked = data.monitor_obsoleto;
+        document.getElementById('tecladoObsoleto').checked = data.teclado_obsoleto;
+
+        // 🔹 Ocultar los campos de empleado (para que no se editen)
+        document.getElementById('empleadoFields').style.display = 'none';
+
+        // 🔹 Eliminar el atributo required del select de empleados (para evitar el error)
+        document.getElementById('empleadoSelect').removeAttribute('required');
+
+        // 🔹 Mostrar el modal
+        const modal = new bootstrap.Modal(document.getElementById('addComputerModal'));
+        modal.show();
+    })
+    .catch(error => console.error('Error al cargar computadora:', error));
+}
+
+
+
+// ✅ Marcar como obsoleta
+function Obsoletas(id) {
+    if (confirm('¿Marcar esta computadora como obsoleta?')) {
+        fetch(`/computadoras/${id}/obsoleta`, { method: 'PUT' })
+        .then(response => response.json())
+        .then(data => {
+            alert(data.mensaje);
+            cargarComputadoras();
+        });
+    }
+}
+
+// ✅ Filtro de búsqueda mejorado
+document.getElementById("searchInput").addEventListener("input", function() {
+    const query = this.value.trim();
+    if (query === "") {
+        cargarComputadoras();
+        return;
+    }
+
+    fetch(`/buscar_computadoras?q=${query}`)
+    .then(response => response.json())
+    .then(data => {
+        const lista = document.getElementById('computadorasList');
+        lista.innerHTML = '';
+
+        data.forEach(comp => {
+            lista.innerHTML += `
+                <div class="card p-3 mb-2">
+                    <strong>Número de Inventario:</strong> ${comp.numero_inventario}<br>
+                    <strong>Estado:</strong> ${comp.estado}<br>
+                    <strong>Departamento:</strong> ${comp.departamento}<br>
+                    <strong>Ubicación Campus:</strong> ${comp.ubicacion_campus}<br>
+                    <strong>Monitor:</strong> ${comp.monitor}<br>
+                    <strong>Teclado:</strong> ${comp.teclado}<br>
+                    <strong>Tipo de Propiedad:</strong> ${comp.tipo_propiedad}<br>
+                    <strong>Empleado Asignado:</strong> ${comp.empleado ? comp.empleado.nombre : "No asignado"}<br>
+                </div>
+            `;
+        });
+    });
+});
+
+
+// ✅ Filtro por tipo de propiedad
+document.getElementById("filtroTipo").addEventListener("change", function() {
+    const tipoPropiedad = this.value;  // Obtiene el valor seleccionado
+
+    let url = "/buscar_computadoras";
+    if (tipoPropiedad) {
+        url += `?tipo=${encodeURIComponent(tipoPropiedad)}`;
+    }
+
+    fetch(url)
+    .then(response => response.json())
+    .then(data => {
+        const tablaBody = document.getElementById('tablaComputadoras'); // 🔥 Asegúrate de tener este ID en el <tbody>
+        tablaBody.innerHTML = '';  // Limpiamos antes de insertar nuevas computadoras
+
+        data.forEach(comp => {
+            tablaBody.innerHTML += `
+                <tr>
+                    <td>${comp.numero_inventario}</td>
+                    <td>${comp.estado}</td>
+                    <td>${comp.departamento}</td>
+                    <td>${comp.ubicacion_campus}</td>
+                    <td>${comp.monitor}</td>
+                    <td>${comp.teclado}</td>
+                    <td>${comp.tipo_propiedad}</td>
+                    <td>${comp.empleado ? comp.empleado.nombre : "Sin asignar"}</td>
+                </tr>`;
+        });
+    })
+    .catch(error => console.error("❌ Error al filtrar computadoras:", error));
+});
+
+
+
+
+// ✅ Ocultar botones si no es admin
+function verificarRol() {
+    fetch('/obtener_rol')
+    .then(response => response.json())
+    .then(userData => {
+        if (userData.rol !== "admin") {
+            document.getElementById('btnAgregarComputadora').style.display = 'none';
+            document.getElementById('btnReasignarComputadora').style.display = 'none';
+
+            // 🔥 Ocultar botón de "Agregar Empleado"
+            const btnAgregarEmpleado = document.querySelector('button[data-bs-target="#addEmployeeModal"]');
+            if (btnAgregarEmpleado) {
+                btnAgregarEmpleado.style.display = 'none';
+            }
+        }
+    });
+}
+
+
+document.addEventListener('DOMContentLoaded', () => {
+    console.log("⚡ Página completamente cargada - Iniciando procesos...");
+    
+    // 1. Cargar listado principal de computadoras
+    cargarComputadoras();
+    
+    // 2. Precargar empleados (si el select existe)
+    if (document.getElementById('empleadoSelect')) {
+        console.log("🔄 Precargando empleados...");
+        cargarEmpleados();
+    }
+    
+    // 3. Verificar rol de usuario
+    verificarRol();
+});
+
+// ✅ Logout
+document.getElementById('logoutBtn').addEventListener('click', function() {
+    fetch('/logout', { method: 'GET' })
+    .then(() => window.location.href = "/login");
+});
+
+
+// ---------------todo lo de empleados------------------ 
+
+
+// ✅ Cargar empleados al abrir el modal
+// ✅ Cargar empleados al abrir el modal
+function cargarEmpleados() {
+    console.log("✅ Iniciando carga de empleados...");
+    
+    const select = document.getElementById('empleadoSelect');
+    if (!select) {
+        console.error("❌ Error: No se encontró el elemento select");
+        return;
+    }
+
+    // Mostrar estado de carga
+    select.innerHTML = '<option value="">Cargando empleados...</option>';
+    select.disabled = true;
+
+    // Hacer la petición con timestamp para evitar caché
+    fetch(`/empleados?t=${Date.now()}`)
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`Error HTTP: ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(empleados => {
+        console.log("📋 Datos recibidos:", empleados);
+
+        // Verificar que sea un array
+        if (!Array.isArray(empleados)) {
+            throw new Error("La respuesta no es un array válido");
+        }
+
+        // Limpiar y llenar el select
+        select.innerHTML = '<option value="">Seleccionar empleado...</option>';
+        select.disabled = false;
+        
+        empleados.forEach(emp => {
+            // Validar que el empleado tenga los campos necesarios
+            if (emp.id && emp.nombre && emp.puesto && emp.campus) {
+                const option = new Option(
+                    `${emp.nombre} - ${emp.puesto} (${emp.campus})`, 
+                    emp.id
+                );
+                select.add(option);
+            }
+        });
+
+        console.log("✔️ Empleados cargados correctamente");
+    })
+    .catch(error => {
+        console.error("❌ Error al cargar empleados:", error);
+        // Mostrar opción de error
+        select.innerHTML = '<option value="">Error al cargar empleados</option>';
+        select.disabled = false;
+    });
+}
+
+
+
+
+
+document.getElementById('addEmployeeForm').addEventListener('submit', function(event) {
+    event.preventDefault(); // Evita recargar la página
+
+    const data = {
+        nombre: document.getElementById('nombreEmpleado').value,
+        email: document.getElementById('emailEmpleado').value,
+        puesto: document.getElementById('puestoEmpleado').value,
+        campus: document.getElementById('campusEmpleado').value,
+        password: document.getElementById('passwordEmpleado').value
+    };
+
+    fetch('/empleados', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+    })
+    .then(response => {
+        console.log(response); // 🔥 Verifica qué responde el servidor
+        return response.json();
+    })
+    .then(data => {
+        console.log(data); // 🔥 Mira si el backend devuelve la respuesta esperada
+
+        if (data.mensaje) {
+            alert(data.mensaje);
+            document.getElementById('addEmployeeForm').reset();
+            bootstrap.Modal.getInstance(document.getElementById('addEmployeeModal')).hide();
+            cargarEmpleados(); // 🚀 Actualizar la lista en el select
+        } else {
+            alert('Error al crear empleado');
+        }
+    })
+    .catch(error => console.error('Error en la solicitud:', error));
+});
+
+// seccion de reportes 
+
+function descargarExcel() {
+    window.location.href = "/reporte/excel";
+}
+
+
+function toggleDarkMode() {
+    document.body.classList.toggle('dark-mode');
+    // Guardar preferencia en localStorage
+    localStorage.setItem('darkMode', document.body.classList.contains('dark-mode'));
+}
+
+// Al cargar la página
+if (localStorage.getItem('darkMode') === 'true') {
+    document.body.classList.add('dark-mode');
+}
+
+
+document.addEventListener('DOMContentLoaded', function() {
+  const darkModeSwitch = document.getElementById('darkModeSwitch');
+  
+  // Cargar preferencia guardada
+  const savedMode = localStorage.getItem('darkMode');
+  if (savedMode === 'dark') {
+    enableDarkMode();
+    darkModeSwitch.checked = true;
+  } else if (savedMode === 'light') {
+    enableLightMode();
+    darkModeSwitch.checked = false;
+  }
+  
+  // Detectar preferencia del sistema
+  if (!savedMode && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    enableDarkMode();
+    darkModeSwitch.checked = true;
+  }
+
+  // Evento para el switch
+  darkModeSwitch.addEventListener('change', function() {
+    if (this.checked) {
+      enableDarkMode();
+    } else {
+      enableLightMode();
+    }
+  });
+});
+
+function enableDarkMode() {
+  document.documentElement.setAttribute('data-bs-theme', 'dark');
+  localStorage.setItem('darkMode', 'dark');
+  updateSwitchIcon(true);
+}
+
+function enableLightMode() {
+  document.documentElement.setAttribute('data-bs-theme', 'light');
+  localStorage.setItem('darkMode', 'light');
+  updateSwitchIcon(false);
+}
+
+function updateSwitchIcon(isDark) {
+  const label = document.querySelector('label[for="darkModeSwitch"]');
+  if (isDark) {
+    label.innerHTML = '<i class="bi bi-sun-fill"></i> Modo Claro';
+  } else {
+    label.innerHTML = '<i class="bi bi-moon-fill"></i> Modo Oscuro';
+  }
+}
+
+        </script>
+     
+        
+        
+        
+    
+
+    <footer class="footer mt-auto py-3" style="background: linear-gradient(to right, #B48C00, #1E4F91);">
+        <div class="container text-center text-white">
+            <p class="mb-1">&copy; 2025 <strong>INVENTARIO UNAH</strong>. Todos los derechos reservados.</p>
+            <p class="mb-1">Desarrollado por <strong>Fabiel Ivan Vasquez Mendoza</strong>.</p>
+            <p class="mb-1">
+                Contáctanos: 
+                <a href="mailto:fabielvasques52gmail.com" class="text-white fw-bold">fabielvasques52@gmail.com</a> | 
+                Teléfono: <span class="fw-bold">+504 9516-6590</span>
+            </p>
+        </div>
+    </footer>
+    
+</body>
+</html>

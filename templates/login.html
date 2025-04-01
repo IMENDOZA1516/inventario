@@ -1,0 +1,131 @@
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iniciar Sesión</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #2C5D91; /* Azul de fondo */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+        .login-container {
+            background-color: #C29D10; /* Color dorado */
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            width: 350px;
+        }
+        .login-container h2 {
+            margin-bottom: 20px;
+            color: white;
+            font-weight: bold;
+        }
+        .login-container label {
+            color: white;
+            font-weight: bold;
+        }
+        .login-container .form-control {
+            border-radius: 10px;
+        }
+        .btn-ingresar {
+            background-color: #2C5D91;
+            color: white;
+            border-radius: 10px;
+        }
+        .btn-ingresar:hover {
+            background-color: #1E4170;
+        }
+        .text-link {
+            color: white;
+        }
+        .text-link:hover {
+            color: #FFD700;
+        }
+        .mb-6 {
+  margin-bottom: 10rem; /* Ajusta este valor según necesites */
+}
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="row justify-content-center mt-5 mb-6"> <!-- Agregué más margen abajo -->
+            <div class="col-md-8 col-lg-5"> <!-- Hice el cuadro más ancho -->
+                <div class="card shadow" style="background-color: #b5910a; border-radius: 10px; padding: 20px;">
+                    <div class="card-body p-4">
+                        <div class="text-center">
+                            <img src="/static/Escudo_de_la_UNAH.svg.png" alt="Logo" class="mb-3" style="max-width: 80px;"> 
+                        </div>
+                        <h2 class="card-title text-center mb-4 text-white">Iniciar Sesión</h2>
+                        <form id="loginForm">
+                            <div class="mb-3">
+                                <label for="email" class="form-label text-white">Correo electrónico</label>
+                                <input type="email" class="form-control" id="email" name="email" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="password" class="form-label text-white">Contraseña</label>
+                                <input type="password" class="form-control" id="password" name="password" required>
+                            </div>
+                            <div class="d-grid">
+                                <button type="submit" class="btn" style="background-color: #184a7d; color: white;">Ingresar</button>
+                            </div>
+                        </form>
+                        <div class="text-center mt-3">
+                            <!-- Eliminamos la opción de registro porque ahora solo el admin puede crear usuarios -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+    <!-- Script para enviar el formulario en formato JSON -->
+    <script>
+     document.getElementById('loginForm').addEventListener('submit', function (event) {
+    event.preventDefault();
+
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+
+    fetch('/login', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.redirect) {
+            window.location.href = data.redirect;  // Redirigir al dashboard
+        } else {
+            alert(data.mensaje);  // Mostrar mensaje de error
+        }
+    })
+    .catch(error => console.error('Error:', error));
+});
+    </script>
+
+
+
+
+<footer class="footer py-3 mt-auto" style="background-color: #C29D10; color: white; position: fixed; bottom: 0; width: 100%;">
+    <div class="container text-center">
+        <p class="mb-1">&copy; 2025 <strong>INVENTARIO UNAH</strong>. Todos los derechos reservados.</p>
+        <p class="mb-1">Desarrollado por <strong>Fabiel Ivan Vasquez Mendoza</strong>.</p>
+        <p class="mb-1">
+            Contáctanos: 
+            <a href="mailto:fabielvasques52gmail.com" style="color: white; text-decoration: underline;">fabielvasques52gmail.com</a> | 
+            Teléfono: <a href="tel:+50495166590" style="color: white; text-decoration: underline;">+504 9516-6590</a>
+        </p>
+        
+    </div>
+</footer>
+</body>
+</html>
