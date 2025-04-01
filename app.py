@@ -46,9 +46,13 @@ jwt = JWTManager(app)
 app.secret_key = 'Mendoza0101'  # Usa una clave única y segura
 
 # Configuración de la base de datos
-app.config['SQLALCHEMY_DATABASE_URI'] = "postgresql://postgres:Mendoza0101@localhost:5432/inventario"
+import os
+
+# Configuración de la base de datos desde variable de entorno o valor por defecto local
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv("DATABASE_URL", "postgresql://postgres:Mendoza0101@localhost:5432/inventario")
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['SECRET_KEY'] = 'Mendoza0101'  # Necesario para Flask-Login
+app.config['SECRET_KEY'] = os.getenv("SECRET_KEY", "Mendoza0101")
+
 db.init_app(app)
 
 # Configurar Flask-Migrate
