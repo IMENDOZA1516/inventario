@@ -37,6 +37,10 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from models import Computadora, Accesorio
 from sqlalchemy import text
 from models import Migracion  # Si los modelos están en un archivo llamado models.py
+from werkzeug.security import generate_password_hash
+from models import Usuario  # ajusta si tu modelo está en otro archivo
+
+
 app = Flask(__name__)
 
 
@@ -1154,6 +1158,3 @@ def probar_conexion():
         return f"❌ Error: {e}"
 
 if __name__ == '__main__':
- with app.app_context():
-     db.create_all() 
- app.run(debug=True)
