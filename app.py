@@ -35,7 +35,7 @@ from flask_migrate import Migrate
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from models import Computadora, Accesorio
-
+from sqlalchemy import text
 from models import Migracion  # Si los modelos están en un archivo llamado models.py
 app = Flask(__name__)
 
@@ -1148,11 +1148,10 @@ def ver_base_demo():
 @app.route("/conexion")
 def probar_conexion():
     try:
-        db.session.execute("SELECT 1")
+        db.session.execute(text("SELECT 1"))  # 👈 Aquí usamos text()
         return "✅ Conexión exitosa con PostgreSQL"
     except Exception as e:
         return f"❌ Error: {e}"
-
 
 if __name__ == '__main__':
  with app.app_context():
