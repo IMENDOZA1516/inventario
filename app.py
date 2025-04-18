@@ -34,6 +34,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
+from models import Computadora, Accesorio
 
 from models import Migracion  # Si los modelos están en un archivo llamado models.py
 app = Flask(__name__)
@@ -46,9 +47,10 @@ jwt = JWTManager(app)
 app.secret_key = 'Mendoza0101'  # Usa una clave única y segura
 
 # Leer directamente de la variable de entorno sin poner un valor por defecto
-app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv("DATABASE_URL")
+# Configuración de la base de datos desde variable de entorno o valor por defecto local
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv("DATABASE_URL", "postgresql://postgres:Mendoza0101@localhost:5432/inventario")
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['SECRET_KEY'] = os.getenv("SECRET_KEY")
+app.config['SECRET_KEY'] = os.getenv("SECRET_KEY", "Mendoza0101")
 db.init_app(app)
 
 # Configurar Flask-Migrate
@@ -77,6 +79,7 @@ def agregar_computadora():
     if not empleado_id:
         return jsonify({'mensaje': 'Error: Debes seleccionar un empleado'}), 400
 
+    # Crear la computadora
     nueva_computadora = Computadora(
         numero_inventario=data.get('numero_inventario'),
         ubicacion_campus=data.get('ubicacion_campus'),
@@ -86,13 +89,32 @@ def agregar_computadora():
         estado=data.get('estado'),
         tipo_propiedad=data.get('tipo_propiedad'),
         empleado_id=empleado_id,
-        monitor_obsoleto=False,
-        teclado_obsoleto=False
+        monitor_obsoleto=data.get('monitor_obsoleto', False),
+        teclado_obsoleto=data.get('teclado_obsoleto', False)
     )
     db.session.add(nueva_computadora)
+    db.session.commit()  # 👈 Guardamos para que tenga ID antes de asignar accesorios
+
+    # Accesorios (si vienen)
+    accesorios = data.get('accesorios', [])
+    for acc in accesorios:
+        tipo = acc.get('tipo')
+        inventario = acc.get('numero_inventario')
+        ligado_a_pc = acc.get('ligado_a_pc', True)  # por defecto, se liga a la computadora
+
+        if tipo and inventario:
+            accesorio = Accesorio(
+                tipo=tipo,
+                numero_inventario=inventario,
+                empleado_id=empleado_id,
+                computadora_id=nueva_computadora.id if ligado_a_pc else None
+            )
+            db.session.add(accesorio)
+
     db.session.commit()
 
-    return jsonify({'mensaje': 'Computadora agregada correctamente'}), 201
+    return jsonify({'mensaje': 'Computadora y accesorios agregados correctamente'}), 201
+
 
 #---- ruta para agregar empleado + usuario----
 @app.route('/empleados', methods=['POST'])
@@ -175,22 +197,25 @@ def buscar_computadoras():
 
 
 
-# ---------- Obtener computadoras filtradas por rol ----------
 @app.route('/computadoras', methods=['GET'])
 @login_required
 def obtener_computadoras():
+    page = request.args.get('page', 1, type=int)
+    per_page = 10
+
     rol_usuario = current_user.rol
     if rol_usuario == "usuario":
         empleado = Empleado.query.filter_by(email=current_user.email).first()
         if not empleado:
             return jsonify([])
-
-        computadoras = Computadora.query.filter_by(empleado_id=empleado.id, es_obsoleta=False).all()
+        query = Computadora.query.filter_by(empleado_id=empleado.id, es_obsoleta=False)
     else:
-        computadoras = Computadora.query.filter(Computadora.es_obsoleta.is_(False)).all()
+        query = Computadora.query.filter(Computadora.es_obsoleta.is_(False))
+
+    paginated = query.paginate(page=page, per_page=per_page, error_out=False)
 
     lista_computadoras = []
-    for comp in computadoras:
+    for comp in paginated.items:
         computadora_info = {
             'id': comp.id,
             'numero_inventario': comp.numero_inventario,
@@ -200,24 +225,29 @@ def obtener_computadoras():
             'monitor': comp.monitor,
             'teclado': comp.teclado,
             'tipo_propiedad': comp.tipo_propiedad,
-            'empleado_id': comp.empleado_id
-        }
-        if comp.empleado:
-            computadora_info['empleado'] = {
+            'empleado_id': comp.empleado_id,
+            'empleado': {
                 'id': comp.empleado.id,
                 'nombre': comp.empleado.nombre,
                 'email': comp.empleado.email,
-                'puesto': comp.empleado.puesto
-            }
-        else:
-            computadora_info['empleado'] = None
-
+                'puesto': comp.empleado.puesto,
+                'campus': comp.empleado.campus
+            } if comp.empleado else None,
+            # ✅ Solo accesorios ligados a esta computadora
+            'accesorios': [{
+                'tipo': a.tipo,
+                'numero_inventario': a.numero_inventario
+            } for a in comp.accesorios]
+        }
         lista_computadoras.append(computadora_info)
 
-    return jsonify(lista_computadoras)
+    return jsonify({
+        'computadoras': lista_computadoras,
+        'total_paginas': paginated.pages,
+        'pagina_actual': paginated.page
+    })
 
 
-# ---------- Actualizar computadora ----------
 @app.route('/computadoras/<int:id>', methods=['PUT'])
 def actualizar_computadora(id):
     computadora = Computadora.query.get(id)
@@ -225,74 +255,141 @@ def actualizar_computadora(id):
         return jsonify({'error': 'Computadora no encontrada'}), 404
 
     data = request.json
+
     computadora.numero_inventario = data.get('numero_inventario', computadora.numero_inventario)
     computadora.ubicacion_campus = data.get('ubicacion_campus', computadora.ubicacion_campus)
     computadora.departamento = data.get('departamento', computadora.departamento)
     computadora.tipo_propiedad = data.get('tipo_propiedad', computadora.tipo_propiedad)
     computadora.estado = data.get('estado', computadora.estado)
+
     empleado_id = data.get('empleado_id')
-    if empleado_id is not None:
+    if empleado_id:
         computadora.empleado_id = empleado_id
 
-    # ✅ Manejo del monitor obsoleto
+    # Monitor obsoleto
     if data.get('monitor_obsoleto') and computadora.monitor:
-        componente_monitor = ComponenteDefectuoso(
+        comp_def = ComponenteDefectuoso(
             tipo_componente="Monitor",
             modelo=computadora.monitor,
-            inventario_componente=computadora.monitor,  # Aquí usas el mismo campo monitor como inventario
-            motivo="Daño irreparable",
+            inventario_componente=computadora.monitor,
+            motivo=data.get('motivo_monitor') or "Daño irreparable",
             computadora_id=computadora.id
         )
-        db.session.add(componente_monitor)
+        db.session.add(comp_def)
         computadora.monitor = None
         computadora.monitor_obsoleto = True
     else:
         computadora.monitor = data.get('monitor')
+        computadora.monitor_obsoleto = False
 
-    # ✅ Manejo del teclado obsoleto
+    # Teclado obsoleto
     if data.get('teclado_obsoleto') and computadora.teclado:
-        componente_teclado = ComponenteDefectuoso(
+        comp_def = ComponenteDefectuoso(
             tipo_componente="Teclado",
             modelo=computadora.teclado,
-            inventario_componente=computadora.teclado,  # Usamos el mismo campo teclado como inventario
-            motivo="Daño irreparable",
+            inventario_componente=computadora.teclado,
+            motivo=data.get('motivo_teclado') or "Daño irreparable",
             computadora_id=computadora.id
         )
-        db.session.add(componente_teclado)
+        db.session.add(comp_def)
         computadora.teclado = None
         computadora.teclado_obsoleto = True
     else:
         computadora.teclado = data.get('teclado')
+        computadora.teclado_obsoleto = False
+
+    # CPU obsoleta
+    if data.get('cpu_obsoleta'):
+        existe = ComponenteDefectuoso.query.filter_by(
+            computadora_id=computadora.id,
+            tipo_componente="CPU",
+            inventario_componente=computadora.numero_inventario
+        ).first()
+        if not existe:
+            cpu_def = ComponenteDefectuoso(
+                tipo_componente="CPU",
+                modelo="N/A",
+                inventario_componente=computadora.numero_inventario,
+                motivo=data.get('motivo_cpu') or "Daño irreparable",
+                computadora_id=computadora.id
+            )
+            db.session.add(cpu_def)
+
+    # ✅ SOLO eliminamos accesorios ligados a esta computadora
+    Accesorio.query.filter_by(computadora_id=computadora.id).delete()
+
+    # ✅ Insertamos los nuevos accesorios
+    for acc in data.get('accesorios', []):
+        tipo = acc.get('tipo')
+        inventario = acc.get('numero_inventario')
+        ligado_a_pc = acc.get('ligado_a_pc', True)
+        es_obsoleto = acc.get('obsoleto', False)
+        motivo = acc.get('motivo') or "Daño irreparable"
+
+        if tipo and inventario:
+            if es_obsoleto:
+                comp_def = ComponenteDefectuoso(
+                    tipo_componente=tipo,
+                    modelo=tipo,
+                    inventario_componente=inventario,
+                    motivo=motivo,
+                    computadora_id=computadora.id
+                )
+                db.session.add(comp_def)
+            else:
+                accesorio = Accesorio(
+                    tipo=tipo,
+                    numero_inventario=inventario,
+                    empleado_id=computadora.empleado_id,
+                    computadora_id=computadora.id if ligado_a_pc else None
+                )
+                db.session.add(accesorio)
 
     db.session.commit()
     return jsonify({'mensaje': 'Computadora actualizada correctamente'})
 
 
 
+
+
 @app.route('/computadoras/<int:id>', methods=['GET'])
 @login_required
 def obtener_computadora_por_id(id):
-    computadora = Computadora.query.get(id)
-    if not computadora:
+    comp = Computadora.query.get(id)
+    if not comp:
         return jsonify({'error': 'Computadora no encontrada'}), 404
 
-    computadora_info = {
-        'id': computadora.id,
-        'numero_inventario': computadora.numero_inventario,
-        'ubicacion_campus': computadora.ubicacion_campus,
-        'departamento': computadora.departamento,
-        'estado': computadora.estado,
-        'monitor': computadora.monitor,
-        'teclado': computadora.teclado,
-        'tipo_propiedad': computadora.tipo_propiedad,
-        'monitor_obsoleto': computadora.monitor_obsoleto,
-        'teclado_obsoleto': computadora.teclado_obsoleto,
+    # ✅ Obtener accesorios del empleado: ligados y no ligados
+    accesorios = []
+    if comp.empleado:
+        for a in comp.accesorios:  # Solo los accesorios ligados a esta computadora
+            accesorios.append({
+            'tipo': a.tipo,
+            'numero_inventario': a.numero_inventario,
+            'ligado_a_pc': True  # Ya sabemos que sí lo están
+        })
+
+    comp_json = {
+        'id': comp.id,
+        'numero_inventario': comp.numero_inventario,
+        'ubicacion_campus': comp.ubicacion_campus,
+        'departamento': comp.departamento,
+        'estado': comp.estado,
+        'monitor': comp.monitor,
+        'teclado': comp.teclado,
+        'tipo_propiedad': comp.tipo_propiedad,
+        'monitor_obsoleto': comp.monitor_obsoleto,
+        'teclado_obsoleto': comp.teclado_obsoleto,
         'empleado': {
-            'nombre': computadora.empleado.nombre if computadora.empleado else '',
-            'email': computadora.empleado.email if computadora.empleado else ''
-        }
+            'nombre': comp.empleado.nombre if comp.empleado else '',
+            'email': comp.empleado.email if comp.empleado else ''
+        },
+        'accesorios': accesorios
     }
-    return jsonify(computadora_info)
+
+    return jsonify(comp_json)
+
+
 
 
 # ---------- Eliminar computadora ----------
@@ -302,7 +399,7 @@ def eliminar_computadora(id):
     if not computadora:
         return jsonify({"mensaje": "Computadora no encontrada"}), 404
 
-    # Crear entrada en historial
+    # Crear entrada en historial de eliminadas
     eliminada = ComputadoraEliminada(
         numero_inventario=computadora.numero_inventario,
         estado=computadora.estado,
@@ -318,10 +415,30 @@ def eliminar_computadora(id):
     )
 
     db.session.add(eliminada)
+
+    # ⚠️ Registrar los accesorios en defectuosos antes de borrar (opcional)
+    if computadora.empleado and computadora.empleado.accesorios:
+        for acc in computadora.empleado.accesorios:
+            componente = ComponenteDefectuoso(
+                tipo_componente=acc.tipo,
+                modelo=acc.tipo,
+                inventario_componente=acc.numero_inventario,
+                motivo="Computadora eliminada",
+                computadora_id=computadora.id
+            )
+            db.session.add(componente)
+
+       # ⚠️ Elimina solo los accesorios del empleado que estén ligados a esta computadora
+    Accesorio.query.filter_by(
+    empleado_id=computadora.empleado.id,
+    computadora_id=computadora.id  # 👈 clave: que estén asignados a esta computadora
+    ).delete()
+
     db.session.delete(computadora)
     db.session.commit()
 
     return jsonify({"mensaje": "Computadora movida a historial de eliminadas"}), 200
+
 
 # ---------- Marcar computadora como obsoleta ----------
 @app.route('/computadoras/<int:id>/obsoleta', methods=['PUT'])
@@ -365,7 +482,7 @@ def login():
         session['usuario'] = usuario.email  # Guarda el email
         session['rol'] = usuario.rol  # Guarda el rol
 
-        return jsonify({"mensaje": "Login exitoso", "redirect": "/dashboard", "rol": usuario.rol}), 200
+        return jsonify({"mensaje": "Login exitoso", "redirect": "/accesorios_generales", "rol": usuario.rol}), 200
     else:
         return jsonify({"mensaje": "Credenciales incorrectas"}), 401
 
@@ -409,44 +526,80 @@ def dashboard():
 # rutas para ver las computadoras eliminadas 
 @app.route('/eliminadas')
 @login_required
-def ver_computadoras_eliminadas():
-    if current_user.rol != 'admin':
-        return redirect(url_for('dashboard'))  # Redirigir si no es admin
-    return render_template('eliminadas.html', rol=current_user.rol)
+def ver_eliminadas():
+    return render_template('eliminadas.html')  # este HTML tiene el bloque `{% if request.args.get('fragment') %}`
 
-@app.route('/computadoras_eliminadas', methods=['GET'])
+
+@app.route('/api/computadoras_eliminadas')
 @login_required
-def obtener_computadoras_eliminadas():
+def api_computadoras_eliminadas():
     if current_user.rol != 'admin':
-        return jsonify({"mensaje": "Acceso denegado"}), 403
+        return jsonify({'error': 'Acceso denegado'}), 403
 
     eliminadas = ComputadoraEliminada.query.all()
-    lista_eliminadas = []
+    resultado = [
+        {
+            'numero_inventario': c.numero_inventario,
+            'estado': c.estado,
+            'departamento': c.departamento,
+            'ubicacion_campus': c.ubicacion_campus,
+            'monitor': c.monitor,
+            'teclado': c.teclado,
+            'tipo_propiedad': c.tipo_propiedad,
+            'fecha_eliminacion': c.fecha_eliminacion.strftime('%Y-%m-%d %H:%M'),
+            'empleado_nombre': c.empleado_nombre or "No asignado"
+        }
+        for c in eliminadas
+    ]
+    return jsonify(resultado)
 
-    for comp in eliminadas:
-        lista_eliminadas.append({
-            'id': comp.id,
-            'numero_inventario': comp.numero_inventario,
-            'estado': comp.estado,
-            'departamento': comp.departamento,
-            'ubicacion_campus': comp.ubicacion_campus,
-            'monitor': comp.monitor,
-            'teclado': comp.teclado,
-            'tipo_propiedad': comp.tipo_propiedad,
-            'fecha_eliminacion': comp.fecha_eliminacion.strftime('%Y-%m-%d %H:%M:%S')
-        })
 
-    return jsonify(lista_eliminadas)
+
 
 
 # ---------- Obtener componentes obsoletos ----------
-@app.route('/componentes_obsoletos', methods=['GET'])
+@app.route('/componentes_obsoletos')
 @login_required
-def obtener_componentes_obsoletos():
-    if current_user.rol != 'admin':
-        return jsonify({'error': 'Acceso no autorizado'}), 403
+def ver_componentes_obsoletos():
+    return render_template('componentes_obsoletos.html')  # con {% if request.args.get('fragment') %}
 
-    componentes = ComponenteDefectuoso.query.all()
+
+
+
+@app.route('/api/componentes_obsoletos')
+@login_required
+def api_componentes_obsoletos():
+    if current_user.rol != "admin":
+        return jsonify({'error': 'Acceso denegado'}), 403
+
+    # Obtener parámetros de filtro
+    inventario = request.args.get('inventario')
+    tipo = request.args.get('tipo')
+    fecha_desde = request.args.get('fecha_desde')
+
+    # Construir consulta base
+    query = ComponenteDefectuoso.query
+
+    # Aplicar filtros
+    if inventario:
+        query = query.filter(
+            ComponenteDefectuoso.inventario_componente.ilike(f'%{inventario}%')
+        )
+
+    if tipo:
+        query = query.filter_by(tipo_componente=tipo)
+
+    if fecha_desde:
+        try:
+            fecha_desde = datetime.fromisoformat(fecha_desde)
+            query = query.filter(ComponenteDefectuoso.fecha_marcado >= fecha_desde)
+        except ValueError:
+            pass  # Ignorar si el formato de fecha es inválido
+
+    # Ejecutar consulta
+    componentes = query.order_by(ComponenteDefectuoso.fecha_marcado.desc()).all()
+
+    # Formatear respuesta
     componentes_json = [
         {
             'id': comp.id,
@@ -456,20 +609,14 @@ def obtener_componentes_obsoletos():
             'motivo': comp.motivo,
             'fecha_marcado': comp.fecha_marcado.strftime('%Y-%m-%d %H:%M'),
             'computadora_id': comp.computadora_id,
-            'numero_inventario_computadora': comp.computadora.numero_inventario if comp.computadora else "No encontrada"
-        }
+            'numero_inventario_computadora': comp.computadora.numero_inventario if comp.computadora else "No encontrada",
+            'empleado': comp.computadora.empleado.nombre if comp.computadora and comp.computadora.empleado else "Sin asignar"
+        }   
         for comp in componentes
     ]
-
+    
     return jsonify(componentes_json)
 
-
-@app.route('/componentes_obsoletos_page')
-@login_required
-def ver_componentes_obsoletos():
-    if current_user.rol != "admin":
-        return redirect(url_for('dashboard'))
-    return render_template('componentes_obsoletos.html')
 
 
 @app.route('/reporte/pdf')
@@ -904,6 +1051,99 @@ def marcar_componente_obsoleto():
 @login_required
 def empleados_page():
     return render_template('empleados.html', rol=current_user.rol)
+
+#---ruta de accesorios----
+@app.route('/accesorios_generales')
+@login_required
+def vista_accesorios_generales():
+    if current_user.rol != 'admin':
+        return redirect('/dashboard')
+    
+    # Versión fragmentada para carga dinámica
+    if request.args.get('fragment'):
+        return render_template('accesorios_generales.html')
+    
+    # Versión completa para carga normal
+    return render_template('accesorios_generales.html')
+
+@app.route('/empleados_json')
+@login_required
+def obtener_empleados_json():
+    empleados = Empleado.query.all()
+    return jsonify([
+        {
+            'id': emp.id,
+            'nombre': emp.nombre,
+            'email': emp.email
+        }
+        for emp in empleados
+    ])
+
+@app.route('/accesorios_generales/<int:empleado_id>', methods=['GET'])
+@login_required
+def obtener_accesorios_generales(empleado_id):
+    empleado = Empleado.query.get(empleado_id)
+    if not empleado:
+        return jsonify({'error': 'Empleado no encontrado'}), 404
+
+    accesorios = Accesorio.query.filter_by(empleado_id=empleado_id, computadora_id=None).all()
+
+    return jsonify({
+        'empleado': {
+            'nombre': empleado.nombre,
+            'email': empleado.email,
+            'campus': empleado.campus
+        },
+        'accesorios': [
+            {
+                'id': a.id,
+                'tipo': a.tipo,
+                'numero_inventario': a.numero_inventario
+            } for a in accesorios
+        ]
+    })
+
+
+@app.route('/accesorios_generales', methods=['POST'])
+@login_required
+def agregar_accesorio_general():
+    data = request.get_json()
+    accesorio = Accesorio(
+        tipo=data['tipo'],
+        numero_inventario=data['numero_inventario'],
+        empleado_id=data['empleado_id'],
+        computadora_id=None
+    )
+    db.session.add(accesorio)
+    db.session.commit()
+    return jsonify({'mensaje': 'Accesorio agregado correctamente'}), 201
+
+
+@app.route('/accesorios_generales/<int:accesorio_id>', methods=['DELETE'])
+@login_required
+def eliminar_accesorio_general(accesorio_id):
+    accesorio = Accesorio.query.get(accesorio_id)
+    if not accesorio:
+        return jsonify({'error': 'Accesorio no encontrado'}), 404
+
+    componente_obsoleto = ComponenteDefectuoso(
+        tipo_componente=accesorio.tipo,
+        modelo=accesorio.tipo,
+        inventario_componente=accesorio.numero_inventario,
+        motivo="Accesorio dañado",
+        computadora_id=None
+    )
+    db.session.add(componente_obsoleto)
+    db.session.delete(accesorio)
+    db.session.commit()
+
+    return jsonify({'mensaje': 'Accesorio marcado como obsoleto'}), 200
+
+
+@app.route('/base_demo')
+@login_required
+def ver_base_demo():
+    return render_template('base.html')
 
 
 

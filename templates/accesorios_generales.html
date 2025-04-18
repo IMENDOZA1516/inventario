@@ -1,0 +1,77 @@
+{% if request.args.get('fragment') %}
+<!-- Contenido para carga dinámica -->
+<div class="container">
+    <h2 class="mb-4">📦 Gestión de Accesorios Generales</h2>
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <div class="mb-3">
+                <label for="empleadoSelectGeneral" class="form-label">Seleccionar Empleado</label>
+                <select id="empleadoSelectGeneral" class="form-select">
+                    <option value="">Seleccione un empleado...</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <div id="infoEmpleado" class="mb-4" style="display: none;"></div>
+
+    <div id="seccionAccesorios" style="display: none;">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h4 class="card-title mb-4">Accesorios Asignados</h4>
+                
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Tipo</th>
+                                <th>Número Inventario</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tablaAccesoriosGenerales"></tbody>
+                    </table>
+                </div>
+
+                <div class="mt-4 p-3 bg-light rounded">
+                    <h5>Agregar Nuevo Accesorio</h5>
+                    <div class="row g-3">
+                        <div class="col-md-5">
+                            <select id="tipoAccesorioGeneral" class="form-select">
+                                <option value="">Tipo de Accesorio</option>
+                                <option value="Teléfono">Teléfono</option>
+                                <option value="Impresora">Impresora</option>
+                                <option value="UPS">UPS</option>
+                                <option value="Escáner">Escáner</option>
+                                <option value="Servidor">Servidor</option>
+                                <option value="Televisor">Televisor</option>
+                                <option value="Datashow">Datashow</option>
+                            </select>
+                        </div>
+                        <div class="col-md-5">
+                            <input type="text" id="inventarioAccesorioGeneral" class="form-control" placeholder="Número de Inventario">
+                        </div>
+                        <div class="col-md-2">
+                            <button id="btnAgregarAccesorio" class="btn btn-primary w-100">Agregar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<link rel="stylesheet" href="{{ url_for('static', filename='css/accesorios_generales.css') }}">
+{% else %}
+{# Versión completa para carga normal #}
+{% extends 'base.html' %}
+{% block content %}
+
+
+{% endblock %}
+{% block scripts %}
+   
+{% endblock %}
+{% endif %}

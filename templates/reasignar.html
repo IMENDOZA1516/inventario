@@ -1,31 +1,8 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <title>Document</title>
-</head>
-<body>
-    <nav class="navbar navbar-expand-lg" style="background: linear-gradient(to right, #B48C00, #1E4F91);">
-        <div class="container-fluid">
-            <!-- Logo de la institución -->
-            <a class="navbar-brand d-flex align-items-center" href="#">
-                <img src="/static/Escudo_de_la_UNAH.svg.png" alt="Logo" width="50" height="75" class="me-2">
-                <span class="text-white fw-bold">Reasignar Computadoras</span>
-            </a>
-    
-            
-    
-            <!-- Botón de Cerrar Sesión -->
-            <button class="btn btn-outline-light" id="logoutBtn">
-                <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
-            </button>
-        </div>
-    </nav>
+{% if request.args.get('fragment') %}
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
     <div class="container mt-4">
-       
-    
         <form id="reasignarForm" class="p-4 bg-light rounded shadow">
             <!-- Información del equipo -->
             <div class="card mb-3">
@@ -157,80 +134,16 @@
     </div>
     
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-document.getElementById("reasignarForm").addEventListener("submit", function(event) {
-    event.preventDefault(); // Evita el envío tradicional del formulario
-
-    // Obtener los datos del formulario
-    let formData = new FormData(this);
+    {% else %}
+    {% extends 'base.html' %}
+    {% block content %}
+        <!-- Aquí incluiríamos el mismo contenido que arriba, si fuera carga completa -->
+    {% endblock %}
+    {% block scripts %}
     
-    // Convertir FormData a JSON
-    let jsonData = {};
-    formData.forEach((value, key) => {
-        jsonData[key] = value;
-    });
-
-    // Enviar datos al backend con Fetch API
-    fetch("/reasignar", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify(jsonData)
-    })
-    .then(response => response.json())
-    .then(data => {
-        console.log("Respuesta del servidor:", data); // Depuración en consola
-
-        if (data.success) {
-            alert("Reasignación guardada exitosamente.");
-
-            // Guardamos el ID de la última reasignación
-            let reasignacionID = data.id;
-
-            if (reasignacionID) {
-                console.log("Se ha generado la reasignación con ID:", reasignacionID);
-                
-                // Habilitar el botón de Descargar PDF con el ID correcto
-                let pdfButton = document.getElementById("btnDescargarPDF");
-                pdfButton.href = `/generar_pdf/${reasignacionID}`;
-                pdfButton.style.display = "inline"; // Mostrar el botón
-
-
-                // Habilitar el botón de Descargar Word con el ID correcto
-                let wordButton = document.getElementById("btnDescargarWord");
-                wordButton.href = `/generar_word/${reasignacionID}`;
-                wordButton.style.display = "inline"; // Mostrar el botón
-
-
-
-
-            } else {
-                console.error("Error: No se recibió un ID válido del backend.");
-            }
-
-        } else {
-            alert("Error al guardar la reasignación.");
-        }
-    })
-    .catch(error => {
-        console.error("Error:", error);
-        alert("Error en la solicitud.");
-    });
-});
-    </script>
-    <footer class="footer mt-auto py-3" style="background: linear-gradient(to right, #B48C00, #1E4F91);">
-        <div class="container text-center text-white">
-            <p class="mb-1">&copy; 2025 <strong>INVENTARIO UNAH</strong>. Todos los derechos reservados.</p>
-            <p class="mb-1">Desarrollado por <strong>Fabiel Ivan Vasquez Mendoza</strong>.</p>
-            <p class="mb-1">
-                Contáctanos: 
-                <a href="mailto:fabielvasques52gmail.com" class="text-white fw-bold">fabielvasques52@gmail.com</a> | 
-                Teléfono: <span class="fw-bold">+504 9516-6590</span>
-            </p>
-        </div>
-    </footer>
+    {% endblock %}
+    {% endif %}
     
-</body>
-</html>
+
+
 

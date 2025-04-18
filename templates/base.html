@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UNAH | Sistema de Inventario</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}">
+    <!-- Bootstrap CSS (esto sí va en <head>) -->
+
+
+    
+</head>
+<body>
+
+    <!-- ENCABEZADO -->
+    <header class="header">
+        <img src="{{ url_for('static', filename='Campus-Olancho-Color-A.png') }}" alt="Encabezado UNAH">
+        <h1>UNAH - Sistema de Inventario</h1>
+    </header>
+
+    <!-- CONTENEDOR PRINCIPAL -->
+    <div class="main-container">
+        <!-- BARRA LATERAL -->
+        <nav class="sidebar">
+            <a href="#" onclick="cargarContenido('dashboard')">🏠 Dashboard</a>
+            <a href="#" onclick="cargarContenido('reasignar')">🔁 Reasignar</a>
+            <a href="#" onclick="cargarContenido('componentes_obsoletos')">⚠️ Obsoletos</a>
+            <a href="#" onclick="cargarContenido('accesorios_generales')">🗑️ accesorios</a>
+            <a href="#" onclick="cargarContenido('eliminadas')">🗑️ ❌Eliminadas</a>
+            <a href="/logout">🚪 Cerrar Sesión</a>
+        </nav>
+
+        <!-- CONTENIDO -->
+        <div class="content" id="contenido">
+            <p>Selecciona una opción del menú para comenzar.</p>
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="footer">
+        <img src="{{ url_for('static', filename='Campus-Olancho-Color-B.png') }}" alt="Footer UNAH">
+    </footer>
+
+    <script src="{{ url_for('static', filename='js/base.js') }}"></script>
+<!-- ✅ JavaScript de Bootstrap 5.3 (incluye Popper.js) -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    {% block scripts %}{% endblock %}
+
+</body>
+</html>
+

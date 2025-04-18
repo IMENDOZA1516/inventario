@@ -28,7 +28,18 @@ class Empleado(db.Model):
     email = db.Column(db.String(100), unique=True, nullable=False)
     puesto = db.Column(db.String(100), nullable=False)
     campus = db.Column(db.String(100), nullable=False)
+
     computadoras = db.relationship('Computadora', backref='empleado', lazy=True)
+
+    accesorios = db.relationship(
+        'Accesorio',
+        back_populates='empleado',  # ✅ ahora sí coincide
+        cascade='all, delete-orphan',
+        lazy=True
+    )
+
+
+
 
 
 class Usuario(db.Model, UserMixin):  # 🔥 Heredamos de UserMixin
@@ -105,15 +116,29 @@ class Reasignacion(db.Model):
 
 class ComponenteDefectuoso(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    tipo_componente = db.Column(db.String(50), nullable=False)  # 'Monitor' o 'Teclado'
+    tipo_componente = db.Column(db.String(50), nullable=False)  # Ej: 'Monitor', 'Teclado', 'CPU', etc.
     modelo = db.Column(db.String(100), nullable=False)
-    inventario_componente = db.Column(db.String(100), nullable=False)  # El inventario del monitor/teclado
-    motivo = db.Column(db.Text, nullable=False)  # Motivo por el cual se vuelve obsoleto
+    inventario_componente = db.Column(db.String(100), nullable=False)
+    motivo = db.Column(db.Text, nullable=False)
     fecha_marcado = db.Column(db.DateTime, default=datetime.utcnow)
 
-    # Relación con la computadora original
-    computadora_id = db.Column(db.Integer, db.ForeignKey('computadora.id'), nullable=False)
-    computadora = db.relationship('Computadora', backref=db.backref('componentes_defectuosos', lazy=True))  
+    # Relación con la computadora
+    computadora_id = db.Column(
+        db.Integer,
+        db.ForeignKey('computadora.id', ondelete='CASCADE'),  # ⚠️ Clave del cambio
+        nullable=True
+    )
+
+    computadora = db.relationship(
+        'Computadora',
+        backref=db.backref(
+            'componentes_defectuosos',
+            lazy=True,
+            cascade='all, delete-orphan',
+            passive_deletes=True
+        )
+    )
+
 
 class ComputadoraEliminada(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -129,3 +154,17 @@ class ComputadoraEliminada(db.Model):
     fecha_eliminacion = db.Column(db.DateTime, default=datetime.utcnow)
     empleado_nombre = db.Column(db.String(100), nullable=True)
     empleado_email = db.Column(db.String(100), nullable=True)
+
+
+class Accesorio(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    tipo = db.Column(db.String(50), nullable=False)
+    numero_inventario = db.Column(db.String(100), nullable=False)
+
+    # Relación directa con el empleado (siempre obligatorio)
+    empleado_id = db.Column(db.Integer, db.ForeignKey('empleado.id'), nullable=False)
+    empleado = db.relationship('Empleado', back_populates='accesorios')  # ✅
+
+    # Relación opcional con computadora
+    computadora_id = db.Column(db.Integer, db.ForeignKey('computadora.id'), nullable=True)
+    computadora = db.relationship('Computadora', backref='accesorios')  # Esto está bien

@@ -1,0 +1,198 @@
+
+
+body {
+    margin: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--gris-suave);
+    color: var(--texto-oscuro);
+}
+
+/* Contenedor principal */
+.container-main {
+    padding: 30px;
+    max-width: 1200px;
+    margin: 0 auto;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.05);
+}
+
+.container-main h2 {
+    margin-bottom: 25px;
+    color: var(--azul-unah);
+}
+
+/* Tabla */
+.table-wrapper {
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+thead {
+    background-color: var(--azul-unah);
+    color: white;
+}
+
+th, td {
+    padding: 12px 16px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+tr:hover {
+    background-color: #f9f9f9;
+}
+
+
+/* Contenedor principal de filtros */
+.filtros-card {
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    box-shadow: none;
+    background-color: #ffffff;
+    margin-bottom: 20px;
+}
+
+/* Encabezado azul */
+.filtros-card .card-header {
+    background-color: #0d6efd;
+    color: white;
+    font-weight: 600;
+    font-size: 1rem;
+    padding: 10px 15px;
+    border-bottom: none;
+    border-radius: 6px 6px 0 0 !important;
+}
+
+/* Cuerpo del card */
+.filtros-card .card-body {
+    padding: 15px;
+}
+
+/* Estilo de tabla para los filtros */
+.filtros-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 10px;
+}
+
+.filtros-table th {
+    text-align: left;
+    font-weight: 500;
+    font-size: 0.85rem;
+    color: #495057;
+    padding-bottom: 5px;
+    border-bottom: none;
+}
+
+.filtros-table td {
+    padding-right: 15px;
+    vertical-align: top;
+}
+
+.filtros-table td:last-child {
+    padding-right: 0;
+    text-align: right;
+}
+
+/* Inputs y selects */
+.filtros-card .form-control,
+.filtros-card .form-select {
+    width: 100%;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    padding: 6px 10px;
+    height: 36px;
+    background-color: #fff;
+}
+
+.filtros-card .form-control:focus,
+.filtros-card .form-select:focus {
+    border-color: #86b7fe;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+/* Botones */
+.filtros-card .btn {
+    font-size: 0.85rem;
+    font-weight: 500;
+    padding: 6px 12px;
+    border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    transition: all 0.2s;
+}
+
+/* Botón Limpiar */
+.filtros-card .btn-outline-secondary {
+    border: 1px solid #6c757d;
+    color: #6c757d;
+    background-color: transparent;
+}
+
+.filtros-card .btn-outline-secondary:hover {
+    background-color: #f8f9fa;
+    color: #5a6268;
+}
+
+/* Botón Aplicar */
+.filtros-card .btn-primary {
+    background-color: #0d6efd;
+    border: 1px solid #0d6efd;
+    color: white;
+}
+
+.filtros-card .btn-primary:hover {
+    background-color: #0b5ed7;
+    border-color: #0a58ca;
+}
+
+/* Iconos */
+.filtros-card .bi {
+    font-size: 0.9rem;
+}
+/* Diseño responsivo */
+@media (max-width: 768px) {
+    .filtros-card .col-md-4,
+    .filtros-card .col-md-3,
+    .filtros-card .col-md-2 {
+        width: 100%;
+        margin-bottom: 15px;
+    }
+    
+    .filtros-card .d-flex.align-items-end {
+        flex-direction: row;
+        margin-top: 10px;
+    }
+    
+    .filtros-card .btn {
+        width: 50%;
+    }
+    
+    .filtros-card .btn-outline-secondary {
+        margin-right: 8px;
+    }
+}
+
+
+/* Responsive */
+@media (max-width: 768px) {
+    .container-main {
+        padding: 20px;
+    }
+
+    th, td {
+        padding: 10px;
+    }
+}

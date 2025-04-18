@@ -1,0 +1,224 @@
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--gris-fondo);
+    color: var(--texto-oscuro);
+    margin: 0;
+    padding: 0;
+}
+
+/* Contenedor principal */
+.container {
+    max-width: 1200px;
+    margin: 30px auto;
+    background-color: white;
+    padding: 25px;
+    border-radius: 8px;
+    box-shadow: 0 0 12px rgba(0,0,0,0.08);
+}
+
+h2 {
+    margin-bottom: 25px;
+    color: var(--azul-unah);
+    font-size: 1.6rem;
+}
+
+/* Tabla */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    border-radius: 6px;
+    overflow: hidden;
+    box-shadow: 0 0 8px rgba(0,0,0,0.05);
+}
+
+thead {
+    background-color: var(--azul-unah);
+    color: white;
+}
+
+th, td {
+    padding: 12px 16px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+tr:hover {
+    background-color: #f9f9f9;
+}
+
+.text-center {
+    text-align: center;
+}
+
+/* Contenedor principal del card de filtros */
+/* Estilo general para la tarjeta de filtros */
+.filtros-card {
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+/* Estilo para el encabezado de la tarjeta */
+.filtros-card .card-header {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+    font-weight: 600;
+    padding: 12px 16px;
+    color: #333;
+}
+
+/* Estilo para el cuerpo de la tarjeta */
+.filtros-card .card-body {
+    padding: 20px;
+}
+
+/* Estilo para las etiquetas de los filtros */
+.filtros-card .form-label {
+    font-weight: 500;
+    font-size: 0.875rem;
+    color: #495057;
+    margin-bottom: 8px;
+    display: block;
+}
+
+/* Estilo para los inputs y selects */
+.filtros-card .form-control,
+.filtros-card .form-select {
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    padding: 8px 12px;
+    height: 38px;
+    font-size: 0.875rem;
+}
+
+/* Estilo para los botones */
+.filtros-card .btn {
+    padding: 8px 12px;
+    font-size: 0.875rem;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+/* Botón Limpiar filtros */
+.filtros-card #limpiarFiltros {
+    border: 1px solid #6c757d;
+    color: #6c757d;
+    background-color: transparent;
+}
+
+.filtros-card #limpiarFiltros:hover {
+    background-color: #f8f9fa;
+}
+
+/* Botón Aplicar filtros */
+.filtros-card #aplicarFiltros {
+    background-color: #0d6efd;
+    border: 1px solid #0d6efd;
+    color: white;
+}
+
+.filtros-card #aplicarFiltros:hover {
+    background-color: #0b5ed7;
+    border-color: #0a58ca;
+}
+
+/* Estilo para los iconos */
+.filtros-card .bi {
+    font-size: 1rem;
+}
+
+/* Diseño responsivo */
+@media (max-width: 768px) {
+    .filtros-card .col-md-3,
+    .filtros-card .col-md-2,
+    .filtros-card .col-md-5 {
+        width: 100%;
+        margin-bottom: 15px;
+    }
+    
+    .filtros-card .d-flex {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .filtros-card .btn {
+        width: 100% !important;
+    }
+}
+
+/* Diseño responsivo */
+@media (max-width: 768px) {
+    .filtros-card .col-md-3,
+    .filtros-card .col-md-2,
+    .filtros-card .col-md-5 {
+        width: 100%;
+        margin-bottom: 15px;
+    }
+    
+    .filtros-card .d-flex {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .filtros-card .btn {
+        width: 100% !important;
+    }
+}
+
+
+/* Estilo para la tabla de filtros */
+.table-filters {
+    width: 100%;
+    margin-bottom: 0;
+}
+
+.table-filters th {
+    font-weight: 500;
+    color: #000b15;
+    font-size: 0.875rem;
+    padding-bottom: 8px;
+    border-bottom: none;
+}
+
+.table-filters td {
+    padding: 0 8px 0 0;
+    vertical-align: middle;
+    border-bottom: none;
+}
+
+.table-filters td:last-child {
+    padding-right: 0;
+    white-space: nowrap;
+}
+
+/* Asegurar que los inputs y selects ocupen todo el ancho */
+.table-filters .form-control,
+.table-filters .form-select {
+    width: 100%;
+}
+
+/* Ajustar espaciado entre botones */
+.table-filters .btn {
+    margin-left: 8px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .container {
+        padding: 15px;
+    }
+
+    th, td {
+        font-size: 0.9rem;
+        padding: 10px;
+    }
+
+    h2 {
+        font-size: 1.3rem;
+    }
+}

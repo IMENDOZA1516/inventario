@@ -1,33 +1,59 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title>Historial de Computadoras Eliminadas</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-</head>
-<body>
-    <nav class="navbar navbar-expand-lg" style="background: linear-gradient(to right, #B48C00, #1E4F91);">
-        <div class="container-fluid">
-            <!-- Logo de la institución -->
-            <a class="navbar-brand d-flex align-items-center" href="#">
-                <img src="/static/Escudo_de_la_UNAH.svg.png" alt="Logo" width="50" height="75" class="me-2">
-                <span class="text-white fw-bold">Inventario de Computadoras</span>
-            </a>
-    
-            <!-- Rol del usuario -->
-            <span class="text-white me-3">Rol: {{ rol }}</span>
-    
-            <!-- Botón de Cerrar Sesión -->
-            <button class="btn btn-outline-light" id="logoutBtn">
-                <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
-            </button>
-            
 
-        </div>
-    </nav>
+
+{% if request.args.get('fragment') %} 
+<div class="card filtros-card mb-4">
+    <div class="card-header">Filtros de Búsqueda</div>
+    <div class="card-body">
+        <form id="formFiltros">
+            <div class="table-responsive">
+                <table class="table table-borderless table-filters">
+                    <thead>
+                        <tr>
+                            <th>Buscar</th>
+                            <th>Tipo</th>
+                            <th>Estado</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>
+                                <input type="text" id="filtroBusqueda" class="form-control" placeholder="Nombre/Modelo/Serie">
+                            </td>
+                            <td>
+                                <select id="filtroPropiedad" class="form-select">
+                                    <option value="">Todos los tipos</option>
+                                    <option value="Propia">Propia</option>
+                                    <option value="Alquilada">Alquilada</option>
+                                </select>
+                            </td>
+                            <td>
+                                <select id="filtroEstado" class="form-select">
+                                    <option value="">Todos los estados</option>
+                                    <option value="Disponible">Disponible</option>
+                                    <option value="Asignada">Asignada</option>
+                                </select>
+                            </td>
+                            <td class="text-end">
+                                <button type="button" class="btn btn-outline-secondary me-2" id="limpiarFiltros">
+                                    <i class="bi bi-x-circle"></i> Limpiar filtros
+                                </button>
+                                <button type="button" class="btn btn-primary" id="aplicarFiltros">
+                                    <i class="bi bi-funnel"></i> Aplicar filtros
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </form>
+    </div>
+</div>
+  
+
+
     <div class="container mt-4">
         <h2>Historial de Computadoras Eliminadas</h2>
-        <button class="btn btn-primary mb-3" onclick="window.location.href='/dashboard'">Volver al Dashboard</button>
         
         <table class="table table-striped">
             <thead>
@@ -48,33 +74,15 @@
             </tbody>
         </table>
     </div>
+    <script src="{{ url_for('static', filename='js/eliminadas.js') }}"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/eliminadas.css') }}">
 
-    <script>
-        document.addEventListener("DOMContentLoaded", () => {
-            fetch('/computadoras_eliminadas')
-                .then(response => response.json())
-                .then(data => {
-                    const tabla = document.getElementById('tablaEliminadas');
-                    data.forEach(comp => {
-                        tabla.innerHTML += `
-                            <tr>
-                                <td>${comp.numero_inventario}</td>
-                                <td>${comp.estado}</td>
-                                <td>${comp.departamento}</td>
-                                <td>${comp.ubicacion_campus}</td>
-                                <td>${comp.monitor || 'N/A'}</td>
-                                <td>${comp.teclado || 'N/A'}</td>
-                                <td>${comp.tipo_propiedad}</td>
-                                <td>${comp.fecha_eliminacion}</td>
-                                <td>${comp.empleado ? comp.empleado.nombre : "Sin asignar"}</td>
-                            </tr>
-                        `;
-                    });
-                })
-                .catch(err => console.error('Error cargando historial:', err));
-        });
-    </script>
-
-
-</body>
-</html>
+    {% else %}
+    {% extends 'base.html' %}
+    {% block content %}
+        <!-- Aquí incluiríamos el mismo contenido que arriba, si fuera carga completa -->
+    {% endblock %}
+    {% block scripts %}
+    
+    {% endblock %}
+    {% endif %}
