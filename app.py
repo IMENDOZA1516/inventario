@@ -48,7 +48,7 @@ app.secret_key = 'Mendoza0101'  # Usa una clave única y segura
 
 # Leer directamente de la variable de entorno sin poner un valor por defecto
 # Configuración de la base de datos desde variable de entorno o valor por defecto local
-app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv("DATABASE_URL", "postgresql://postgres:Mendoza0101@localhost:5432/inventario")
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv("DATABASE_URL", "postgresql://postgres:viqVSHTJagoHbtYkytwtKFapwPsSqiEi@shinkansen.proxy.rlwy.net:47285/railway")
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = os.getenv("SECRET_KEY", "Mendoza0101")
 db.init_app(app)
@@ -1145,6 +1145,13 @@ def eliminar_accesorio_general(accesorio_id):
 def ver_base_demo():
     return render_template('base.html')
 
+@app.route("/conexion")
+def probar_conexion():
+    try:
+        db.session.execute("SELECT 1")
+        return "✅ Conexión exitosa con PostgreSQL"
+    except Exception as e:
+        return f"❌ Error: {e}"
 
 
 if __name__ == '__main__':
