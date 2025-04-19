@@ -351,96 +351,102 @@ function Obsoletas(id) {
     }
 }
 
-document.getElementById("searchInput").addEventListener("input", function () {
-    const query = this.value.trim();
+function configurarBuscador() {
+    const inputBuscar = document.getElementById("searchInput");
+    if (!inputBuscar) return;
 
-    if (query === "") {
-        cargarComputadoras();
-        return;
-    }
+    inputBuscar.addEventListener("input", function () {
+        const query = this.value.trim();
 
-    fetch(`/buscar_computadoras?q=${query}`)
-        .then(response => response.json())
-        .then(data => {
-            const lista = document.getElementById('computadorasList');
-            lista.innerHTML = '';
+        if (query === "") {
+            cargarComputadoras();
+            return;
+        }
 
-            fetch('/obtener_rol')
-                .then(response => response.json())
-                .then(userData => {
-                    const userRole = userData.rol;
-                    const userId = userData.id;
+        fetch(`/buscar_computadoras?q=${query}`)
+            .then(response => response.json())
+            .then(data => {
+                const lista = document.getElementById('computadorasList');
+                lista.innerHTML = '';
 
-                    const computadorasAMostrar = (userRole === "admin")
-                        ? data
-                        : data.filter(comp => comp.empleado_id === userId);
+                fetch('/obtener_rol')
+                    .then(response => response.json())
+                    .then(userData => {
+                        const userRole = userData.rol;
+                        const userId = userData.id;
 
-                    computadorasAMostrar.forEach(comp => {
-                        const empleado = comp.empleado;
+                        const computadorasAMostrar = (userRole === "admin")
+                            ? data
+                            : data.filter(comp => comp.empleado_id === userId);
 
-                        const empleadoInfo = empleado ? `
-                            <h5 class="text-center fw-bold">👤 ${empleado.nombre}</h5>
-                            <p class="mb-1 text-center text-muted">${empleado.email}</p>
-                            <p class="mb-1"><strong>📍 Departamento:</strong> ${comp.departamento}</p>
-                            <p class="mb-1"><strong>🏢 Campus:</strong> ${comp.ubicacion_campus}</p>
-                        ` : `
-                            <h5 class="text-center text-muted">Sin empleado asignado</h5>
-                            <p class="mb-1"><strong>📍 Departamento:</strong> ${comp.departamento}</p>
-                            <p class="mb-1"><strong>🏢 Campus:</strong> ${comp.ubicacion_campus}</p>
-                        `;
+                        computadorasAMostrar.forEach(comp => {
+                            const empleado = comp.empleado;
 
-                        const computadoraInfo = `
-                            <p class="mb-1 mt-2"><strong>💻 Computadora:</strong></p>
-                            <ul class="mb-2">
-                                <li><strong>CPU:</strong> ${comp.numero_inventario}</li>
-                                <li><strong>Monitor:</strong> ${comp.monitor ?? 'N/A'}</li>
-                                <li><strong>Teclado:</strong> ${comp.teclado ?? 'N/A'}</li>
-                                <li><strong>Propiedad:</strong> ${comp.tipo_propiedad}</li>
-                            </ul>
-                        `;
+                            const empleadoInfo = empleado ? `
+                                <h5 class="text-center fw-bold">👤 ${empleado.nombre}</h5>
+                                <p class="mb-1 text-center text-muted">${empleado.email}</p>
+                                <p class="mb-1"><strong>📍 Departamento:</strong> ${comp.departamento}</p>
+                                <p class="mb-1"><strong>🏢 Campus:</strong> ${comp.ubicacion_campus}</p>
+                            ` : `
+                                <h5 class="text-center text-muted">Sin empleado asignado</h5>
+                                <p class="mb-1"><strong>📍 Departamento:</strong> ${comp.departamento}</p>
+                                <p class="mb-1"><strong>🏢 Campus:</strong> ${comp.ubicacion_campus}</p>
+                            `;
 
-                        const accesoriosInfo = (comp.accesorios && comp.accesorios.length > 0) ? `
-                            <p class="mb-1"><strong>📦 Accesorios:</strong></p>
-                            <ul>
-                                ${comp.accesorios.map(a => `<li>${a.tipo} - Inventario #${a.numero_inventario}</li>`).join('')}
-                            </ul>
-                        ` : '';
+                            const computadoraInfo = `
+                                <p class="mb-1 mt-2"><strong>💻 Computadora:</strong></p>
+                                <ul class="mb-2">
+                                    <li><strong>CPU:</strong> ${comp.numero_inventario}</li>
+                                    <li><strong>Monitor:</strong> ${comp.monitor ?? 'N/A'}</li>
+                                    <li><strong>Teclado:</strong> ${comp.teclado ?? 'N/A'}</li>
+                                    <li><strong>Propiedad:</strong> ${comp.tipo_propiedad}</li>
+                                </ul>
+                            `;
 
-                        const estadoInfo = `<p class="mb-2"><strong>🛠 Estado:</strong> ${comp.estado}</p>`;
+                            const accesoriosInfo = (comp.accesorios && comp.accesorios.length > 0) ? `
+                                <p class="mb-1"><strong>📦 Accesorios:</strong></p>
+                                <ul>
+                                    ${comp.accesorios.map(a => `<li>${a.tipo} - Inventario #${a.numero_inventario}</li>`).join('')}
+                                </ul>
+                            ` : '';
 
-                        const botonesAdmin = (userRole === "admin") ? `
-                        <div class="d-flex gap-2 justify-content-center">
-                            <button class="btn btn-warning btn-sm" onclick="editarComputadora(${comp.id})">Editar</button>
-                            ${comp.tipo_propiedad === 'Alquilada' ? `
-                                <button class="btn btn-danger btn-sm" onclick="eliminarComputadora(${comp.id})">Retirar del sistema</button>
-                            ` : ''}
-                            <button class="btn btn-secondary btn-sm" onclick="marcarObsoleta(${comp.id})">Obsoleta</button>
-                        </div>
-                        ` : '';
+                            const estadoInfo = `<p class="mb-2"><strong>🛠 Estado:</strong> ${comp.estado}</p>`;
 
-                        const card = `
-                            <div class="col-md-6 col-lg-4 mb-3">
-                                <div class="card shadow-sm h-100">
-                                    <div class="card-body">
-                                        ${empleadoInfo}
-                                        ${computadoraInfo}
-                                        ${accesoriosInfo}
-                                        ${estadoInfo}
-                                        ${botonesAdmin}
+                            const botonesAdmin = (userRole === "admin") ? `
+                                <div class="d-flex gap-2 justify-content-center">
+                                    <button class="btn btn-warning btn-sm" onclick="editarComputadora(${comp.id})">Editar</button>
+                                    ${comp.tipo_propiedad === 'Alquilada' ? `
+                                        <button class="btn btn-danger btn-sm" onclick="eliminarComputadora(${comp.id})">Retirar del sistema</button>
+                                    ` : ''}
+                                    <button class="btn btn-secondary btn-sm" onclick="marcarObsoleta(${comp.id})">Obsoleta</button>
+                                </div>
+                            ` : '';
+
+                            const card = `
+                                <div class="col-md-6 col-lg-4 mb-3">
+                                    <div class="card shadow-sm h-100">
+                                        <div class="card-body">
+                                            ${empleadoInfo}
+                                            ${computadoraInfo}
+                                            ${accesoriosInfo}
+                                            ${estadoInfo}
+                                            ${botonesAdmin}
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        `;
+                            `;
 
-                        lista.innerHTML += card;
+                            lista.innerHTML += card;
+                        });
+
+                        const paginacion = document.getElementById('paginacion');
+                        paginacion.innerHTML = '';
                     });
+            });
+    });
+}
 
-                    // Ocultar paginación durante búsqueda
-                    const paginacion = document.getElementById('paginacion');
-                    paginacion.innerHTML = '';
-                });
-        });
-});
+
 
 
 document.getElementById("filtroTipo").addEventListener("change", function() {
@@ -490,13 +496,7 @@ function verificarRol() {
     });
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-    if (document.getElementById('empleadoSelect')) {
-        cargarEmpleados();
-    }
-    verificarRol();
-    initDashboard(); // 👈 ya ahí adentro se llama `cargarComputadoras()`
-});
+
 
 
 // REEMPLAZA el código problemático con esta versión mejorada
@@ -557,62 +557,40 @@ function setupEventListeners() {
         if (el) el.addEventListener(event, handler);
         else console.warn(`Elemento no encontrado: ${selector}`);
     };
-
-    // Input de búsqueda
-    addListener('#searchInput', 'input', function() {
-        const query = this.value.trim();
-        query ? buscarComputadoras(query) : cargarComputadoras();
-    });
-
-    // Filtro por tipo
-    addListener('#filtroTipo', 'change', function() {
-        filtrarPorTipo(this.value);
-    });
 }
 
 // Versión mejorada de initDashboard
 function initDashboard() {
-    // 1. Configurar listeners primero
     setupEventListeners();
-    
-    // 2. Cargar datos
+    configurarBuscador();
     cargarComputadoras();
-    
-    // 3. Exponer funciones necesarias
     window.abrirModalAgregarComputadora = abrirModalAgregarComputadora;
     window.agregarCampoAccesorio = agregarCampoAccesorio;
-    
-    console.log("Dashboard inicializado correctamente");
+    console.log("✅ Dashboard inicializado correctamente");
 }
 
-// 4. Verificación de carga segura
-if (typeof initDashboard === 'function') {
-    if (document.readyState === 'complete') {
+// ✅ Bloque único y limpio para asegurar la carga
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+        if (document.getElementById('empleadoSelect')) {
+            cargarEmpleados();
+        }
+        verificarRol();
         initDashboard();
-    } else {
-        document.addEventListener('DOMContentLoaded', initDashboard);
-    }
+    });
 } else {
-    console.error("initDashboard no está definido");
-}
-
-// 4. Verificación de carga segura
-if (typeof initDashboard === 'function') {
-    if (document.readyState === 'complete') {
-        initDashboard();
-    } else {
-        document.addEventListener('DOMContentLoaded', initDashboard);
+    // Ya cargado
+    if (document.getElementById('empleadoSelect')) {
+        cargarEmpleados();
     }
-} else {
-    console.error("initDashboard no está definido");
-}
-
-// Ejecuta cuando el DOM esté listo
-if (document.readyState === 'complete') {
+    verificarRol();
     initDashboard();
-} else {
-    document.addEventListener('DOMContentLoaded', initDashboard);
 }
+
+
+
+
+
 
 function cargarEmpleados() {
     const select = document.getElementById('empleadoSelect');
@@ -652,105 +630,71 @@ function cargarEmpleados() {
     });
 }
 
-document.getElementById('addEmployeeForm').addEventListener('submit', function(event) {
-    event.preventDefault();
+if (!window.formEmpleado) {
+    const formEmpleado = document.getElementById('addEmployeeForm');
+    if (formEmpleado) {
+        formEmpleado.addEventListener('submit', function(event) {
+            event.preventDefault();
 
-    const data = {
-        nombre: document.getElementById('nombreEmpleado').value,
-        email: document.getElementById('emailEmpleado').value,
-        puesto: document.getElementById('puestoEmpleado').value,
-        campus: document.getElementById('campusEmpleado').value,
-        password: document.getElementById('passwordEmpleado').value
-    };
+            const data = {
+                nombre: document.getElementById('nombreEmpleado').value,
+                email: document.getElementById('emailEmpleado').value,
+                puesto: document.getElementById('puestoEmpleado').value,
+                campus: document.getElementById('campusEmpleado').value,
+                password: document.getElementById('passwordEmpleado').value
+            };
 
-    fetch('/empleados', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.mensaje) {
-            alert(data.mensaje);
-            document.getElementById('addEmployeeForm').reset();
-            bootstrap.Modal.getInstance(document.getElementById('addEmployeeModal')).hide();
-            cargarEmpleados();
-        } else {
-            alert('Error al crear empleado');
-        }
-    })
-    .catch(error => console.error('Error en la solicitud:', error));
-});
+            fetch('/empleados', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.mensaje) {
+                    alert(data.mensaje);
+                    formEmpleado.reset();
+                    bootstrap.Modal.getInstance(document.getElementById('addEmployeeModal')).hide();
+                    cargarEmpleados();
+                } else {
+                    alert('Error al crear empleado');
+                }
+            })
+            .catch(error => console.error('Error en la solicitud:', error));
+        });
+
+        // Marca como ya registrado
+        window.formEmpleado = true;
+    }
+}
+
+
 
 function descargarExcel() {
     window.location.href = "/reporte/excel";
 }
 
-function toggleDarkMode() {
-    document.body.classList.toggle('dark-mode');
-    localStorage.setItem('darkMode', document.body.classList.contains('dark-mode'));
-}
 
-if (localStorage.getItem('darkMode') === 'true') {
-    document.body.classList.add('dark-mode');
-}
+if (!window.tipoAccesorioInicializado) {
+    const tipoAccesorio = document.getElementById('tipoAccesorio');
+    if (tipoAccesorio) {
+        tipoAccesorio.addEventListener('change', function () {
+            const campo = document.getElementById('campoInventarioAccesorio');
+            if (this.value) {
+                campo.style.display = 'block';
+            } else {
+                campo.style.display = 'none';
+                document.getElementById('inventarioAccesorio').value = '';
+            }
+        });
 
-document.addEventListener('DOMContentLoaded', function() {
-  const darkModeSwitch = document.getElementById('darkModeSwitch');
-  
-  const savedMode = localStorage.getItem('darkMode');
-  if (savedMode === 'dark') {
-    enableDarkMode();
-    darkModeSwitch.checked = true;
-  } else if (savedMode === 'light') {
-    enableLightMode();
-    darkModeSwitch.checked = false;
-  }
-  
-  if (!savedMode && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-    enableDarkMode();
-    darkModeSwitch.checked = true;
-  }
-
-  darkModeSwitch.addEventListener('change', function() {
-    if (this.checked) {
-      enableDarkMode();
-    } else {
-      enableLightMode();
+        // Marca como ya inicializado
+        window.tipoAccesorioInicializado = true;
     }
-  });
-});
-
-function enableDarkMode() {
-  document.documentElement.setAttribute('data-bs-theme', 'dark');
-  localStorage.setItem('darkMode', 'dark');
-  updateSwitchIcon(true);
 }
 
-function enableLightMode() {
-  document.documentElement.setAttribute('data-bs-theme', 'light');
-  localStorage.setItem('darkMode', 'light');
-  updateSwitchIcon(false);
-}
 
-function updateSwitchIcon(isDark) {
-  const label = document.querySelector('label[for="darkModeSwitch"]');
-  if (isDark) {
-    label.innerHTML = '<i class="bi bi-sun-fill"></i> Modo Claro';
-  } else {
-    label.innerHTML = '<i class="bi bi-moon-fill"></i> Modo Oscuro';
-  }
-}
 
-document.getElementById('tipoAccesorio').addEventListener('change', function () {
-    const campo = document.getElementById('campoInventarioAccesorio');
-    if (this.value) {
-        campo.style.display = 'block';
-    } else {
-        campo.style.display = 'none';
-        document.getElementById('inventarioAccesorio').value = '';
-    }
-});
 
 function agregarCampoAccesorio() {
     const container = document.getElementById('accesoriosContainer');

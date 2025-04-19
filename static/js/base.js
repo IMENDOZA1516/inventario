@@ -7,6 +7,7 @@ async function cargarScript(src) {
         
         const script = document.createElement('script');
         script.src = src;
+        script.setAttribute('data-dinamico', 'true');
         script.onload = resolve;
         script.onerror = reject;
         document.head.appendChild(script);
