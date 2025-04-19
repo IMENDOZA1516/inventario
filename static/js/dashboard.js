@@ -491,14 +491,13 @@ function verificarRol() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    cargarComputadoras();
-    
     if (document.getElementById('empleadoSelect')) {
         cargarEmpleados();
     }
-    
     verificarRol();
+    initDashboard(); // 👈 ya ahí adentro se llama `cargarComputadoras()`
 });
+
 
 // REEMPLAZA el código problemático con esta versión mejorada
 function safeAddListener(selector, eventType, callback) {
