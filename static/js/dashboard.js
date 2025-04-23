@@ -27,7 +27,7 @@ function cargarComputadoras(pagina = 1) {
                             <h5 class="text-center fw-bold">👤 ${empleado.nombre}</h5>
                             <p class="mb-1 text-center text-muted">${empleado.email}</p>
                             <p class="mb-1"><strong>📍 Departamento:</strong> ${comp.departamento}</p>
-                            <p class="mb-1"><strong>🏢 Campus:</strong> ${comp.ubicacion_campus}</p>
+                            <p class="mb-1"><strong>🏢 Instalaciones:</strong> ${comp.ubicacion_campus}</p>
                         ` : `
                             <h5 class="text-center text-muted">Sin empleado asignado</h5>
                             <p class="mb-1"><strong>📍 Departamento:</strong> ${comp.departamento}</p>
@@ -35,14 +35,18 @@ function cargarComputadoras(pagina = 1) {
                         `;
 
                         const computadoraInfo = `
-                            <p class="mb-1 mt-2"><strong>💻 Computadora:</strong></p>
-                            <ul class="mb-2">
-                                <li><strong>CPU:</strong> ${comp.numero_inventario}</li>
-                                <li><strong>Monitor:</strong> ${comp.monitor ?? 'N/A'}</li>
-                                <li><strong>Teclado:</strong> ${comp.teclado ?? 'N/A'}</li>
-                                <li><strong>Propiedad:</strong> ${comp.tipo_propiedad}</li>
-                            </ul>
-                        `;
+                        <p class="mb-1 mt-2"><strong>💻 Computadora:</strong></p>
+                         <ul class="mb-2">
+                         <li><strong>CPU:</strong> ${
+                        comp.componentes_defectuosos?.some(def => def.tipo === 'CPU' && def.inventario === comp.numero_inventario)
+                         ? 'N/A'
+                        : comp.numero_inventario
+                        }</li>
+                        <li><strong>Monitor:</strong> ${comp.monitor ?? 'N/A'}</li>
+                        <li><strong>Teclado:</strong> ${comp.teclado ?? 'N/A'}</li>
+                        <li><strong>Propiedad:</strong> ${comp.tipo_propiedad}</li>
+                    </ul>
+                    `;
 
                         const accesoriosInfo = (comp.accesorios && comp.accesorios.length > 0) ? `
                             <p class="mb-1"><strong>📦 Accesorios:</strong></p>
@@ -63,21 +67,44 @@ function cargarComputadoras(pagina = 1) {
                         </div>
                         ` : '';
 
-                        const card = `
-                            <div class="col-md-6 col-lg-4 mb-3">
-                                <div class="card shadow-sm h-100">
-                                    <div class="card-body">
-                                        ${empleadoInfo}
-                                        ${computadoraInfo}
-                                        ${accesoriosInfo}
-                                        ${estadoInfo}
-                                        ${botonesAdmin}
-                                    </div>
-                                </div>
-                            </div>
-                        `;
+                        let html = '';
+if (vistaActual === 'tarjetas') {
+    html = `
+        <div class="col-md-6 col-lg-4 mb-3">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    ${empleadoInfo}
+                    ${computadoraInfo}
+                    ${accesoriosInfo}
+                    ${estadoInfo}
+                    ${botonesAdmin}
+                </div>
+            </div>
+        </div>
+    `;
+} else if (vistaActual === 'lista') {
+    html = `
+        <div class="border-bottom py-3">
+            ${empleadoInfo}
+            ${computadoraInfo}
+            ${accesoriosInfo}
+            ${estadoInfo}
+            ${botonesAdmin}
+        </div>
+    `;
+} else if (vistaActual === 'mosaico') {
+    html = `
+        <div class="d-inline-block m-2 border p-3" style="width: 250px;">
+        ${empleadoInfo}
+        ${computadoraInfo}
+        ${accesoriosInfo}
+        ${estadoInfo}
+        ${botonesAdmin}
+        </div>
+    `;
+}
+lista.innerHTML += html;
 
-                        lista.innerHTML += card;
                     });
 
                     const paginacion = document.getElementById('paginacion');
@@ -89,6 +116,23 @@ function cargarComputadoras(pagina = 1) {
                 });
         });
 }
+window.vistaActual = window.vistaActual || "tarjetas";
+
+
+document.getElementById("btnVistaTarjeta").addEventListener("click", () => {
+    vistaActual = "tarjetas";
+    cargarComputadoras(paginaActual);
+});
+
+document.getElementById("btnVistaLista").addEventListener("click", () => {
+    vistaActual = "lista";
+    cargarComputadoras(paginaActual);
+});
+
+document.getElementById("btnVistaMosaico").addEventListener("click", () => {
+    vistaActual = "mosaico";
+    cargarComputadoras(paginaActual);
+});
 
 document.getElementById('addComputerForm').addEventListener('submit', function(event) {
     event.preventDefault();
@@ -641,7 +685,8 @@ if (!window.formEmpleado) {
                 email: document.getElementById('emailEmpleado').value,
                 puesto: document.getElementById('puestoEmpleado').value,
                 campus: document.getElementById('campusEmpleado').value,
-                password: document.getElementById('passwordEmpleado').value
+                password: document.getElementById('passwordEmpleado').value,
+                rol: document.getElementById('rolEmpleado').value  // 👈 nuevo campo
             };
 
             fetch('/empleados', {
@@ -655,7 +700,7 @@ if (!window.formEmpleado) {
                     alert(data.mensaje);
                     formEmpleado.reset();
                     bootstrap.Modal.getInstance(document.getElementById('addEmployeeModal')).hide();
-                    cargarEmpleados();
+                    cargarEmpleados?.(); // Solo si la función existe
                 } else {
                     alert('Error al crear empleado');
                 }
@@ -663,10 +708,10 @@ if (!window.formEmpleado) {
             .catch(error => console.error('Error en la solicitud:', error));
         });
 
-        // Marca como ya registrado
         window.formEmpleado = true;
     }
 }
+
 
 
 

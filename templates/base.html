@@ -16,6 +16,8 @@
     <header class="header">
         <img src="{{ url_for('static', filename='Campus-Olancho-Color-A.png') }}" alt="Encabezado UNAH">
         <h1>UNAH - Sistema de Inventario</h1>
+        <a href="/logout" class="cerrar-sesion">🚪 Cerrar Sesión</a>
+
     </header>
 
     <!-- CONTENEDOR PRINCIPAL -->
@@ -25,9 +27,8 @@
             <a href="#" onclick="cargarContenido('dashboard')">🏠 Dashboard</a>
             <a href="#" onclick="cargarContenido('reasignar')">🔁 Reasignar</a>
             <a href="#" onclick="cargarContenido('componentes_obsoletos')">⚠️ Obsoletos</a>
-            <a href="#" onclick="cargarContenido('accesorios_generales')">🗑️ accesorios</a>
-            <a href="#" onclick="cargarContenido('eliminadas')">🗑️ ❌Eliminadas</a>
-            <a href="/logout">🚪 Cerrar Sesión</a>
+            <a href="#" onclick="cargarContenido('accesorios_generales')">🗑️ Accesorios</a>
+            <a href="#" onclick="cargarContenido('eliminadas')"> ❌Eliminadas</a>
         </nav>
 
         <!-- CONTENIDO -->

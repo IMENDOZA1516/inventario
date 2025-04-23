@@ -148,6 +148,28 @@ if (!window.ComponentesObsoletos) {
             }
         };
 
+        const btnExportar = document.getElementById('btnExportarExcel');
+        if (btnExportar) {
+            btnExportar.addEventListener('click', () => {
+                const inventario = document.getElementById('filtroInventario')?.value.trim();
+                const tipo = document.getElementById('filtroTipo')?.value;
+                const fecha = document.getElementById('filtroFecha')?.value;
+        
+                const params = new URLSearchParams();
+                if (inventario) params.append('inventario', inventario);
+                if (tipo) params.append('tipo', tipo);
+                if (fecha) {
+                    const fechaLimite = calcularFechaLimite(fecha);
+                    if (fechaLimite) {
+                        params.append('fecha_desde', fechaLimite.toISOString());
+                    }
+                }
+        
+                // Redirige para descargar el Excel
+                window.location.href = `/reporte/componentes_obsoletos/excel?${params.toString()}`;
+            });
+        }
+        
         // Inicializar
         const init = () => {
             configurarEventos();

@@ -125,30 +125,46 @@ def agregar_computadora():
 def agregar_empleado():
     data = request.get_json()
 
+    # Validar existencia por correo
     empleado_existente = Empleado.query.filter_by(email=data.get('email')).first()
     usuario_existente = Usuario.query.filter_by(email=data.get('email')).first()
     if empleado_existente or usuario_existente:
         return jsonify({'mensaje': 'Error: El correo ya está registrado'}), 400
 
+    # Si el rol es "usuario", se crea como empleado
+    if data.get('rol') == 'usuario':
+        nuevo_empleado = Empleado(
+            nombre=data.get('nombre'),
+            email=data.get('email'),
+            puesto=data.get('puesto'),
+            campus=data.get('campus')
+        )
+        db.session.add(nuevo_empleado)
+        db.session.commit()
+
+    # Crear usuario (ya sea admin o usuario)
+    rol = data.get('rol', 'usuario')  # Por si no viene, usa 'usuario' por defecto
+
     nuevo_empleado = Empleado(
-        nombre=data.get('nombre'),
-        email=data.get('email'),
-        puesto=data.get('puesto'),
-        campus=data.get('campus')
-    )
+    nombre=data.get('nombre'),
+    email=data.get('email'),
+    puesto=data.get('puesto'),
+    campus=data.get('campus')
+)
     db.session.add(nuevo_empleado)
     db.session.commit()
 
     nuevo_usuario = Usuario(
-        nombre=data.get('nombre'),
-        email=data.get('email'),
-        rol="usuario"
-    )
+    nombre=data.get('nombre'),
+    email=data.get('email'),
+    rol=rol  # 👈 ahora sí respeta el rol recibido
+)
     nuevo_usuario.set_password(data.get('password'))
     db.session.add(nuevo_usuario)
     db.session.commit()
 
-    return jsonify({'mensaje': 'Empleado y usuario creados correctamente'}), 201
+    return jsonify({'mensaje': 'Usuario creado correctamente'}), 201
+
 
 # ---------- Ruta para obtener empleados ----------
 @app.route('/empleados', methods=['GET'])
@@ -237,11 +253,19 @@ def obtener_computadoras():
                 'puesto': comp.empleado.puesto,
                 'campus': comp.empleado.campus
             } if comp.empleado else None,
-            # ✅ Solo accesorios ligados a esta computadora
-            'accesorios': [{
-                'tipo': a.tipo,
-                'numero_inventario': a.numero_inventario
-            } for a in comp.accesorios]
+            'accesorios': [
+                {
+                    'tipo': a.tipo,
+                    'numero_inventario': a.numero_inventario
+                } for a in comp.accesorios
+            ],
+            # 👇 Agregamos los componentes obsoletos
+            'componentes_defectuosos': [
+                {
+                    'tipo': d.tipo_componente,
+                    'inventario': d.inventario_componente
+                } for d in comp.componentes_defectuosos
+            ]
         }
         lista_computadoras.append(computadora_info)
 
@@ -582,13 +606,13 @@ def api_componentes_obsoletos():
     fecha_desde = request.args.get('fecha_desde')
 
     # Construir consulta base
-    query = ComponenteDefectuoso.query
+    query = ComponenteDefectuoso.query.options(
+        db.joinedload(ComponenteDefectuoso.computadora).joinedload(Computadora.empleado),
+        db.joinedload(ComponenteDefectuoso.empleado)  # Cargar relación empleado directamente
+    )
 
-    # Aplicar filtros
     if inventario:
-        query = query.filter(
-            ComponenteDefectuoso.inventario_componente.ilike(f'%{inventario}%')
-        )
+        query = query.filter(ComponenteDefectuoso.inventario_componente.ilike(f'%{inventario}%'))
 
     if tipo:
         query = query.filter_by(tipo_componente=tipo)
@@ -598,14 +622,25 @@ def api_componentes_obsoletos():
             fecha_desde = datetime.fromisoformat(fecha_desde)
             query = query.filter(ComponenteDefectuoso.fecha_marcado >= fecha_desde)
         except ValueError:
-            pass  # Ignorar si el formato de fecha es inválido
+            pass
 
     # Ejecutar consulta
     componentes = query.order_by(ComponenteDefectuoso.fecha_marcado.desc()).all()
 
-    # Formatear respuesta
-    componentes_json = [
-        {
+    componentes_json = []
+
+    for comp in componentes:
+        empleado_nombre = None
+
+        # 1. Verificar si tiene empleado directo
+        if comp.empleado:
+            empleado_nombre = comp.empleado.nombre
+        # 2. Intentar obtener desde la computadora
+        elif comp.computadora and comp.computadora.empleado:
+            empleado_nombre = comp.computadora.empleado.nombre
+        # 3. Intentar obtener desde accesorio general (aunque debería estar cubierto por empleado directo)
+        
+        componentes_json.append({
             'id': comp.id,
             'tipo_componente': comp.tipo_componente,
             'modelo': comp.modelo,
@@ -614,11 +649,9 @@ def api_componentes_obsoletos():
             'fecha_marcado': comp.fecha_marcado.strftime('%Y-%m-%d %H:%M'),
             'computadora_id': comp.computadora_id,
             'numero_inventario_computadora': comp.computadora.numero_inventario if comp.computadora else "No encontrada",
-            'empleado': comp.computadora.empleado.nombre if comp.computadora and comp.computadora.empleado else "Sin asignar"
-        }   
-        for comp in componentes
-    ]
-    
+            'empleado': empleado_nombre or "Sin asignar"
+        })
+
     return jsonify(componentes_json)
 
 
@@ -1117,6 +1150,7 @@ def agregar_accesorio_general():
         numero_inventario=data['numero_inventario'],
         empleado_id=data['empleado_id'],
         computadora_id=None
+        
     )
     db.session.add(accesorio)
     db.session.commit()
@@ -1130,12 +1164,19 @@ def eliminar_accesorio_general(accesorio_id):
     if not accesorio:
         return jsonify({'error': 'Accesorio no encontrado'}), 404
 
+    data = request.get_json()
+    motivo = data.get('motivo', '').strip()
+
+    if not motivo:
+        return jsonify({'error': 'Motivo requerido'}), 400
+
     componente_obsoleto = ComponenteDefectuoso(
         tipo_componente=accesorio.tipo,
         modelo=accesorio.tipo,
         inventario_componente=accesorio.numero_inventario,
-        motivo="Accesorio dañado",
-        computadora_id=None
+        motivo=motivo,
+        computadora_id=None,
+        empleado_id=accesorio.empleado_id
     )
     db.session.add(componente_obsoleto)
     db.session.delete(accesorio)
@@ -1157,5 +1198,120 @@ def probar_conexion():
     except Exception as e:
         return f"❌ Error: {e}"
 
-#if __name__ == '__main__':
- #   app.run(debug=True)
+@app.route('/reporte/componentes_obsoletos/excel')
+@login_required
+def exportar_componentes_obsoletos_excel():
+    if current_user.rol != "admin":
+        return "Acceso denegado", 403
+
+    # Obtener filtros desde los parámetros GET
+    inventario = request.args.get('inventario')
+    tipo = request.args.get('tipo')
+    fecha_desde = request.args.get('fecha_desde')
+
+    # Consulta base
+    query = ComponenteDefectuoso.query
+
+    if inventario:
+        query = query.filter(ComponenteDefectuoso.inventario_componente.ilike(f"%{inventario}%"))
+    if tipo:
+        query = query.filter_by(tipo_componente=tipo)
+    if fecha_desde:
+        try:
+            fecha_desde = datetime.fromisoformat(fecha_desde)
+            query = query.filter(ComponenteDefectuoso.fecha_marcado >= fecha_desde)
+        except ValueError:
+            pass
+
+    componentes = query.order_by(ComponenteDefectuoso.fecha_marcado.desc()).all()
+
+    # Crear DataFrame
+    df = pd.DataFrame([{
+    "Tipo": c.tipo_componente,
+    "Inventario": c.inventario_componente,
+    "Modelo": c.modelo,
+    "Motivo": c.motivo,
+    "Fecha": c.fecha_marcado.strftime('%Y-%m-%d %H:%M'),
+    "Computadora": c.computadora.numero_inventario if c.computadora else "No encontrada",
+    "Empleado": (
+        c.computadora.empleado.nombre if c.computadora and c.computadora.empleado
+        else c.empleado.nombre if c.empleado else "Sin asignar"
+    )
+}   for c in componentes])
+
+    # Convertir a Excel
+    from io import BytesIO
+    output = BytesIO()
+    with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+        df.to_excel(writer, index=False, sheet_name='Obsoletos')
+
+    output.seek(0)
+
+    from flask import send_file
+    return send_file(
+        output,
+        mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        download_name='reporte_obsoletos.xlsx',
+        as_attachment=True
+    )
+
+
+@app.route('/reporte/exportar_excel_eliminadas')
+@login_required
+def exportar_excel_eliminadas():
+    if current_user.rol != 'admin':
+        return jsonify({'error': 'Acceso denegado'}), 403
+
+    texto = request.args.get('texto', '').strip().lower()
+    tipo = request.args.get('tipo', '').strip()
+    estado = request.args.get('estado', '').strip()
+
+
+    query = ComputadoraEliminada.query
+
+    from sqlalchemy import or_
+
+    if texto:
+        query = query.filter(
+        or_(
+            ComputadoraEliminada.numero_inventario.ilike(f'%{texto}%'),
+            ComputadoraEliminada.departamento.ilike(f'%{texto}%'),
+            ComputadoraEliminada.ubicacion_campus.ilike(f'%{texto}%'),
+            ComputadoraEliminada.empleado_nombre.ilike(f'%{texto}%')
+        )
+    )
+
+    if tipo:
+        query = query.filter_by(tipo_propiedad=tipo)
+    if estado:
+        query = query.filter_by(estado=estado)
+
+    datos = query.all()
+
+    df = pd.DataFrame([{
+        "N° Inventario": c.numero_inventario,
+        "Estado": c.estado,
+        "Departamento": c.departamento,
+        "Campus": c.ubicacion_campus,
+        "Monitor": c.monitor,
+        "Teclado": c.teclado,
+        "Propiedad": c.tipo_propiedad,
+        "Fecha Eliminación": c.fecha_eliminacion.strftime('%Y-%m-%d %H:%M'),
+        "Empleado": c.empleado_nombre or "No asignado"
+    } for c in datos])
+
+    output = BytesIO()
+    with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+        df.to_excel(writer, index=False, sheet_name='Eliminadas')
+
+    output.seek(0)
+    return send_file(output, download_name="eliminadas.xlsx", as_attachment=True)
+
+
+
+
+
+if __name__ == '__main__':
+    with app.app_context():
+     db.create_all() 
+     app.run(debug=True)

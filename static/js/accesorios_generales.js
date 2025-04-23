@@ -123,21 +123,30 @@ if (!window.AccesoriosGenerales) {
         };
 
         const eliminarAccesorio = async (id) => {
-            if (!confirm('¿Está seguro de marcar este accesorio como obsoleto?')) return;
-
+            const motivo = prompt('🛠️ Ingresa el motivo por el cual este accesorio es obsoleto:');
+            if (!motivo || !motivo.trim()) {
+                alert('⚠️ No se proporcionó un motivo válido.');
+                return;
+            }
+        
             try {
                 const response = await fetch(`/accesorios_generales/${id}`, {
-                    method: 'DELETE'
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ motivo: motivo.trim() })
                 });
-
+        
                 if (!response.ok) throw new Error('Error en la respuesta del servidor');
-
+        
                 await cargarAccesorios(empleadoSeleccionado);
             } catch (error) {
-                console.error('Error:', error);
-                alert('Error al eliminar accesorio: ' + error.message);
+                console.error('Error al eliminar accesorio:', error);
+                alert('❌ Error al eliminar accesorio: ' + error.message);
             }
         };
+        
 
         const init = () => {
             cargarEmpleados();

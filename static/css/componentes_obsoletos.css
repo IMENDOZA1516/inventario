@@ -184,6 +184,19 @@ tr:hover {
         margin-right: 8px;
     }
 }
+#btnExportarExcel {
+    font-weight: 600;
+    padding: 8px 18px;
+    border-radius: 8px;
+    background-color: #28a745; /* Verde moderno */
+    color: white;
+    border: none;
+    transition: background-color 0.3s ease;
+}
+
+#btnExportarExcel:hover {
+    background-color: #218838; /* Verde más oscuro al pasar el mouse */
+}
 
 
 /* Responsive */

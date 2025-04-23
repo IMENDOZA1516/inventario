@@ -116,28 +116,33 @@ class Reasignacion(db.Model):
 
 class ComponenteDefectuoso(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    tipo_componente = db.Column(db.String(50), nullable=False)  # Ej: 'Monitor', 'Teclado', 'CPU', etc.
+    tipo_componente = db.Column(db.String(50), nullable=False)
     modelo = db.Column(db.String(100), nullable=False)
     inventario_componente = db.Column(db.String(100), nullable=False)
     motivo = db.Column(db.Text, nullable=False)
     fecha_marcado = db.Column(db.DateTime, default=datetime.utcnow)
 
-    # Relación con la computadora
     computadora_id = db.Column(
         db.Integer,
-        db.ForeignKey('computadora.id', ondelete='CASCADE'),  # ⚠️ Clave del cambio
+        db.ForeignKey('computadora.id', ondelete='CASCADE'),
         nullable=True
     )
 
-    computadora = db.relationship(
-        'Computadora',
-        backref=db.backref(
-            'componentes_defectuosos',
-            lazy=True,
-            cascade='all, delete-orphan',
-            passive_deletes=True
-        )
+    empleado_id = db.Column(  # 👈 ESTE CAMPO FALTABA
+        db.Integer,
+        db.ForeignKey('empleado.id'),
+        nullable=True
     )
+
+    computadora = db.relationship('Computadora', backref=db.backref(
+        'componentes_defectuosos',
+        lazy=True,
+        cascade='all, delete-orphan',
+        passive_deletes=True
+    ))
+
+    empleado = db.relationship('Empleado')  # 👈 relación directa para facilitar el acceso
+
 
 
 class ComputadoraEliminada(db.Model):

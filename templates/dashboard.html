@@ -21,6 +21,11 @@
         </button>
         
     </div>
+    <div class="mb-3 d-flex justify-content-end gap-2">
+        <button id="btnVistaTarjeta" class="btn btn-outline-primary btn-sm">Tarjetas</button>
+        <button id="btnVistaLista" class="btn btn-outline-secondary btn-sm">Lista</button>
+        <button id="btnVistaMosaico" class="btn btn-outline-dark btn-sm">Mosaico</button>
+    </div>
     
     <!-- Grupo de visualización -->
     
@@ -121,7 +126,7 @@
                             </div>
                             
                             <div class="col-md-6">
-                                <label class="form-label fw-semibold">Ubicación Campus</label>
+                                <label class="form-label fw-semibold">Instalaciones</label>
                                 <input type="text" class="form-control form-control-lg" id="ubicacionCampus" required>
                             </div>
                             
@@ -223,43 +228,52 @@
 
 <!-- Modal empleado -->
 <div class="modal fade" id="addEmployeeModal" tabindex="-1" aria-labelledby="addEmployeeModalLabel" aria-hidden="true">
-<div class="modal-dialog">
-    <div class="modal-content">
-        <form id="addEmployeeForm">
-            <div class="modal-header">
-                <h5 class="modal-title">Agregar Nuevo Empleado</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <div class="mb-3">
-                    <label class="form-label">Nombre</label>
-                    <input type="text" class="form-control" id="nombreEmpleado" required>
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="addEmployeeForm">
+                <div class="modal-header">
+                    <h5 class="modal-title">Agregar Nuevo Usuario</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
-                <div class="mb-3">
-                    <label class="form-label">Correo</label>
-                    <input type="email" class="form-control" id="emailEmpleado" required>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Nombre</label>
+                        <input type="text" class="form-control" id="nombreEmpleado" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Correo</label>
+                        <input type="email" class="form-control" id="emailEmpleado" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Puesto</label>
+                        <input type="text" class="form-control" id="puestoEmpleado" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Campus</label>
+                        <input type="text" class="form-control" id="campusEmpleado" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Contraseña del Usuario</label>
+                        <input type="password" class="form-control" id="passwordEmpleado" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Rol del Usuario</label>
+                        <select class="form-select" id="rolEmpleado" required>
+                            <option value="usuario" selected>Empleado</option>
+                            <option value="admin">Administrador</option>
+                        </select>
+                    </div>
+                    
                 </div>
-                <div class="mb-3">
-                    <label class="form-label">Puesto</label>
-                    <input type="text" class="form-control" id="puestoEmpleado" required>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-success">Agregar</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
                 </div>
-                <div class="mb-3">
-                    <label class="form-label">Campus</label>
-                    <input type="text" class="form-control" id="campusEmpleado" required>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">Contraseña del Usuario</label>
-                    <input type="password" class="form-control" id="passwordEmpleado" required>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="submit" class="btn btn-success">Agregar</button>
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-            </div>
-        </form>
+            </form>
+        </div>
     </div>
 </div>
-</div>
+
 <!-- Modal: Motivo de obsolescencia -->
 <div class="modal fade" id="motivoObsoletoModal" tabindex="-1" aria-labelledby="motivoObsoletoLabel" aria-hidden="true">
     <div class="modal-dialog">

@@ -207,6 +207,23 @@ tr:hover {
     margin-left: 8px;
 }
 
+#btnExportarEliminadas {
+    font-weight: 500;
+    padding: 6px 14px;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    transition: background-color 0.3s ease;
+}
+
+#btnExportarEliminadas:hover {
+    background-color: #218838;
+}
+
+
+
+
 /* Responsive */
 @media (max-width: 768px) {
     .container {

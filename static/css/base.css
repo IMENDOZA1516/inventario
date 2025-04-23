@@ -37,6 +37,19 @@ body, html {
     font-size: 24px;
 }
 
+.cerrar-sesion {
+    margin-left: auto; /* Lo empuja completamente a la derecha */
+    color: #512e5f; /* Puedes cambiarlo a blanco o negro según el fondo */
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 16px;
+}
+
+.cerrar-sesion:hover {
+    color: #000;
+    text-decoration: underline;
+}
+
 /* CONTENIDO PRINCIPAL */
 .main-container {
     flex: 1;
