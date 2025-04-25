@@ -66,7 +66,7 @@ mail = Mail(app)
 
 # Leer directamente de la variable de entorno sin poner un valor por defecto
 # Configuración de la base de datos desde variable de entorno o valor por defecto local
-app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv("DATABASE_URL", "postgresql://postgres:Mendoza0101@localhost:5432/inventario")
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv("DATABASE_URL", "postgresql://postgres:viqVSHTJagoHbtYkytwtKFapwPsSqiEi@shinkansen.proxy.rlwy.net:47285/railway")
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = os.getenv("SECRET_KEY", "Mendoza0101")
 db.init_app(app)
@@ -1377,14 +1377,14 @@ def recuperar_contrasena():
 
 
 
-#if __name__ == '__main__':
-  #  from flask_migrate import upgrade
-  #  with app.app_context():
-  #      upgrade()
-
-
-
 if __name__ == '__main__':
-   with app.app_context():
-    db.create_all() 
-    app.run(debug=True)
+    from flask_migrate import upgrade
+    with app.app_context():
+       upgrade()
+
+
+
+#if __name__ == '__main__':
+ #  with app.app_context():
+ #   db.create_all() 
+ #   app.run(debug=True)
