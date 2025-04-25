@@ -21,6 +21,8 @@ class Computadora(db.Model):
     tipo_propiedad = db.Column(db.String(10), default="Propia", nullable=False)  # 'Propia' o 'Alquilada'
     es_obsoleta = db.Column(db.Boolean, default=False, nullable=False)  # Para toda la computadora
 
+    observaciones = db.Column(db.Text, nullable=True)
+
    
 class Empleado(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -48,6 +50,7 @@ class Usuario(db.Model, UserMixin):  # 🔥 Heredamos de UserMixin
     email = db.Column(db.String(100), unique=True, nullable=False)
     password_hash = db.Column(db.Text, nullable=False)
     rol = db.Column(db.String(50), default='usuario')
+    codigo_recuperacion = db.Column(db.String(10), nullable=True)
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)

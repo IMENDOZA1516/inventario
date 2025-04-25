@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Recuperar Contraseña</title>
+    <link rel="stylesheet" href="/static/css/recuperar.css">
+</head>
+<body>
+    <div class="container">
+        <div class="form-box">
+            <img src="/static/Escudo_de_la_UNAH.svg.png" alt="Logo UNAH">
+            <h2>Recuperar Contraseña</h2>
+            <p>Ingresa tu correo electrónico registrado para recibir un código de verificación.</p>
+            <form id="formRecuperar">
+                <input type="email" id="emailRecuperar" placeholder="Correo electrónico" required>
+                <button type="submit">Enviar Código</button>
+            </form>
+            <div id="mensajeRecuperacion" class="mensaje"></div>
+            <a href="/login" class="volver">← Volver al login</a>
+        </div>
+    </div>
+    <div id="formCodigo" style="display: none;" class="mt-4">
+        <h5>Ingresar código y nueva contraseña</h5>
+        <form id="formRestablecer">
+            <div class="mb-3">
+                <label for="codigo" class="form-label">Código de recuperación</label>
+                <input type="text" id="codigo" class="form-control" required>
+            </div>
+            <div class="mb-3">
+                <label for="nuevaContrasena" class="form-label">Nueva contraseña</label>
+                <input type="password" id="nuevaContrasena" class="form-control" required>
+            </div>
+            <div class="d-grid">
+                <button type="submit" class="btn btn-success">Restablecer contraseña</button>
+            </div>
+        </form>
+    </div>
+    <p id="mensajeRestablecer" class="mt-2"></p>
+
+    
+    <script src="/static/js/recuperar.js"></script>
+</body>
+</html>

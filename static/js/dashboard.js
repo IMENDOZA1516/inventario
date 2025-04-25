@@ -44,9 +44,14 @@ function cargarComputadoras(pagina = 1) {
                         }</li>
                         <li><strong>Monitor:</strong> ${comp.monitor ?? 'N/A'}</li>
                         <li><strong>Teclado:</strong> ${comp.teclado ?? 'N/A'}</li>
-                        <li><strong>Propiedad:</strong> ${comp.tipo_propiedad}</li>
+                        <li><strong>Propiedad:</strong> ${comp.tipo_propiedad === 'Alquilada' ? 'Leasing' : comp.tipo_propiedad}</li>
+
                     </ul>
                     `;
+                    const observaciones = comp.observaciones 
+                    ? `<p class="mb-2"><strong>📝 Observaciones:</strong> ${comp.observaciones}</p>` 
+                    : '';
+
 
                         const accesoriosInfo = (comp.accesorios && comp.accesorios.length > 0) ? `
                             <p class="mb-1"><strong>📦 Accesorios:</strong></p>
@@ -78,6 +83,7 @@ if (vistaActual === 'tarjetas') {
                     ${accesoriosInfo}
                     ${estadoInfo}
                     ${botonesAdmin}
+                    ${observaciones}
                 </div>
             </div>
         </div>
@@ -90,6 +96,7 @@ if (vistaActual === 'tarjetas') {
             ${accesoriosInfo}
             ${estadoInfo}
             ${botonesAdmin}
+            ${observaciones}
         </div>
     `;
 } else if (vistaActual === 'mosaico') {
@@ -100,6 +107,7 @@ if (vistaActual === 'tarjetas') {
         ${accesoriosInfo}
         ${estadoInfo}
         ${botonesAdmin}
+        ${observaciones}
         </div>
     `;
 }
@@ -150,7 +158,9 @@ document.getElementById('addComputerForm').addEventListener('submit', function(e
         monitor_obsoleto: document.getElementById('monitorObsoleto').checked,
         teclado_obsoleto: document.getElementById('tecladoObsoleto').checked,
         cpu_obsoleta: document.getElementById('cpuObsoleta').checked,
+        observaciones: document.getElementById('observaciones').value.trim(),
         empleado_id: document.getElementById('empleadoSelect').value || null,
+        
 
         // 👇 Motivos personalizados (si existen)
         motivo_monitor: document.getElementById('motivo_monitor')?.value || null,
@@ -223,25 +233,27 @@ document.querySelectorAll('.accesorio-group').forEach(group => {
 function abrirModalAgregarComputadora() {
     console.log("📌 Abriendo modal de computadora...");
 
-    // Configuración inicial del modal
     document.getElementById('modalTitle').textContent = 'Agregar Nueva Computadora';
     document.querySelector('#addComputerForm button[type="submit"]').textContent = 'Guardar Computadora';
     document.getElementById('addComputerForm').reset();
     document.getElementById('computerId').value = '';
 
-    // Obtener referencia al modal
+    // 🔧 Restaurar visibilidad y requisito del select de empleados
+    document.getElementById('empleadoFields').style.display = 'block';
+    document.getElementById('empleadoSelect').setAttribute('required', true);
+
+    // Mostrar el modal
     const modalElement = document.getElementById('addComputerModal');
     const modal = new bootstrap.Modal(modalElement);
 
-    // Evento que se dispara cuando el modal está completamente visible
-    modalElement.addEventListener('shown.bs.modal', function() {
+    modalElement.addEventListener('shown.bs.modal', function () {
         console.log("🔄 Modal completamente visible, cargando empleados...");
         cargarEmpleados();
     });
 
-    // Mostrar el modal
     modal.show();
 }
+
 
 
 
@@ -290,6 +302,7 @@ function editarComputadora(id) {
         document.getElementById('teclado').value = data.teclado || '';
         document.getElementById('cpuObsoleta').checked = data.cpu_obsoleta || false;
         document.getElementById('tecladoObsoleto').checked = data.teclado_obsoleto;
+        document.getElementById('observaciones').value = data.observaciones || '';
 
         document.getElementById('empleadoFields').style.display = 'none';
         document.getElementById('empleadoSelect').removeAttribute('required');
@@ -446,7 +459,9 @@ function configurarBuscador() {
                                     <li><strong>Propiedad:</strong> ${comp.tipo_propiedad}</li>
                                 </ul>
                             `;
-
+                            const observaciones = comp.observaciones 
+                    ? `<p class="mb-2"><strong>📝 Observaciones:</strong> ${comp.observaciones}</p>` 
+                    : '';
                             const accesoriosInfo = (comp.accesorios && comp.accesorios.length > 0) ? `
                                 <p class="mb-1"><strong>📦 Accesorios:</strong></p>
                                 <ul>
@@ -465,7 +480,7 @@ function configurarBuscador() {
                                     <button class="btn btn-secondary btn-sm" onclick="marcarObsoleta(${comp.id})">Obsoleta</button>
                                 </div>
                             ` : '';
-
+                            
                             const card = `
                                 <div class="col-md-6 col-lg-4 mb-3">
                                     <div class="card shadow-sm h-100">
@@ -475,6 +490,7 @@ function configurarBuscador() {
                                             ${accesoriosInfo}
                                             ${estadoInfo}
                                             ${botonesAdmin}
+                                            ${observaciones}
                                         </div>
                                     </div>
                                 </div>
@@ -516,7 +532,7 @@ document.getElementById("filtroTipo").addEventListener("change", function() {
                     <td>${comp.ubicacion_campus}</td>
                     <td>${comp.monitor}</td>
                     <td>${comp.teclado}</td>
-                    <td>${comp.tipo_propiedad}</td>
+                    <td>${comp.tipo_propiedad === 'Alquilada' ? 'Leasing' : comp.tipo_propiedad}</td>
                     <td>${comp.empleado ? comp.empleado.nombre : "Sin asignar"}</td>
                 </tr>`;
         });

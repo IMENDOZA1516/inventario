@@ -64,7 +64,7 @@
           <select id="filtroTipo" class="form-select">
               <option value="">Todas</option>
               <option value="Propia">Propia</option>
-              <option value="Alquilada">Alquilada</option>
+              <option value="Alquilada">Leasing</option>
           </select>
       </div>
   </div>
@@ -161,8 +161,9 @@
                                 <label class="form-label fw-semibold">Tipo de Propiedad</label>
                                 <select class="form-select form-select-lg" id="tipoPropiedad" required>
                                     <option value="Propia">Propia</option>
-                                    <option value="Alquilada">Alquilada</option>
+                                    <option value="Alquilada">Leasing</option> <!-- Mostramos como Leasing -->
                                 </select>
+                                
                             </div>
                             
                             <div class="col-md-6">
@@ -173,6 +174,10 @@
                                 </select>
                             </div>
                         </div>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label fw-semibold">Observaciones</label>
+                        <textarea class="form-control form-control-lg" id="observaciones" rows="3" placeholder="Opcional"></textarea>
                     </div>
                     
                     <!-- Sección 2: Información del Empleado -->

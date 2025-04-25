@@ -39,7 +39,10 @@ from sqlalchemy import text
 from models import Migracion  # Si los modelos están en un archivo llamado models.py
 from werkzeug.security import generate_password_hash
 from models import Usuario  # ajusta si tu modelo está en otro archivo
-
+from flask import request, jsonify
+from flask_mail import Mail, Message
+import random
+import string
 
 app = Flask(__name__)
 
@@ -50,9 +53,20 @@ jwt = JWTManager(app)
 
 app.secret_key = 'Mendoza0101'  # Usa una clave única y segura
 
+
+# Configuración del correo (asegúrate de tener esto en tu app.py o config)
+app.config['MAIL_SERVER'] = 'smtp.gmail.com'
+app.config['MAIL_PORT'] = 587
+app.config['MAIL_USE_TLS'] = True
+app.config['MAIL_USERNAME'] = 'unah.inventario@gmail.com'
+app.config['MAIL_PASSWORD'] = 'qceb qpbn wlek klax'  # Contraseña de app de Gmail
+mail = Mail(app)
+
+
+
 # Leer directamente de la variable de entorno sin poner un valor por defecto
 # Configuración de la base de datos desde variable de entorno o valor por defecto local
-app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv("DATABASE_URL", "postgresql://postgres:viqVSHTJagoHbtYkytwtKFapwPsSqiEi@shinkansen.proxy.rlwy.net:47285/railway")
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv("DATABASE_URL", "postgresql://postgres:Mendoza0101@localhost:5432/inventario")
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = os.getenv("SECRET_KEY", "Mendoza0101")
 db.init_app(app)
@@ -94,7 +108,9 @@ def agregar_computadora():
         tipo_propiedad=data.get('tipo_propiedad'),
         empleado_id=empleado_id,
         monitor_obsoleto=data.get('monitor_obsoleto', False),
-        teclado_obsoleto=data.get('teclado_obsoleto', False)
+        teclado_obsoleto=data.get('teclado_obsoleto', False),
+        observaciones=data.get('observaciones')
+
     )
     db.session.add(nueva_computadora)
     db.session.commit()  # 👈 Guardamos para que tenga ID antes de asignar accesorios
@@ -206,6 +222,7 @@ def buscar_computadoras():
         'monitor': comp.monitor,
         'teclado': comp.teclado,
         'tipo_propiedad': comp.tipo_propiedad,
+        'observaciones': comp.observaciones,
         'empleado': {
             'nombre': comp.empleado.nombre,
             'email': comp.empleado.email,
@@ -246,6 +263,7 @@ def obtener_computadoras():
             'teclado': comp.teclado,
             'tipo_propiedad': comp.tipo_propiedad,
             'empleado_id': comp.empleado_id,
+            'observaciones': comp.observaciones,
             'empleado': {
                 'id': comp.empleado.id,
                 'nombre': comp.empleado.nombre,
@@ -289,6 +307,7 @@ def actualizar_computadora(id):
     computadora.departamento = data.get('departamento', computadora.departamento)
     computadora.tipo_propiedad = data.get('tipo_propiedad', computadora.tipo_propiedad)
     computadora.estado = data.get('estado', computadora.estado)
+    computadora.observaciones = data.get('observaciones', computadora.observaciones)
 
     empleado_id = data.get('empleado_id')
     if empleado_id:
@@ -408,6 +427,7 @@ def obtener_computadora_por_id(id):
         'tipo_propiedad': comp.tipo_propiedad,
         'monitor_obsoleto': comp.monitor_obsoleto,
         'teclado_obsoleto': comp.teclado_obsoleto,
+        'observaciones': comp.observaciones,
         'empleado': {
             'nombre': comp.empleado.nombre if comp.empleado else '',
             'email': comp.empleado.email if comp.empleado else ''
@@ -1307,15 +1327,64 @@ def exportar_excel_eliminadas():
     output.seek(0)
     return send_file(output, download_name="eliminadas.xlsx", as_attachment=True)
 
+# Ruta para enviar código de recuperación
+@app.route('/enviar_codigo', methods=['POST'])
+def enviar_codigo():
+    data = request.get_json()
+    email = data.get('email')
 
-if __name__ == '__main__':
-    from flask_migrate import upgrade
-    with app.app_context():
-        upgrade()
+    usuario = Usuario.query.filter_by(email=email).first()
+    if not usuario:
+        return jsonify({'mensaje': 'Correo no registrado'}), 404
+
+    # Generar código de 6 dígitos
+    codigo = ''.join(random.choices(string.digits, k=6))
+    usuario.codigo_recuperacion = codigo
+    db.session.commit()
+
+    # Enviar correo
+    msg = Message("Recuperación de contraseña",
+                  sender=app.config['MAIL_USERNAME'],
+                  recipients=[email])
+    msg.body = f"Tu código de recuperación es: {codigo}"
+    mail.send(msg)
+
+    return jsonify({'mensaje': 'Código enviado al correo'}), 200
+
+
+@app.route('/restablecer_contrasena', methods=['POST'])
+def restablecer_contrasena():
+    data = request.get_json()
+    email = data.get('email')
+    codigo = data.get('codigo')
+    nueva_contrasena = data.get('nueva_contrasena')
+
+    usuario = Usuario.query.filter_by(email=email).first()
+    if not usuario or usuario.codigo_recuperacion != codigo:
+        return jsonify({'mensaje': 'Código incorrecto o usuario no encontrado'}), 400
+
+    usuario.set_password(nueva_contrasena)
+    usuario.codigo_recuperacion = None  # Limpiar el código después del cambio
+    db.session.commit()
+
+    return jsonify({'mensaje': 'Contraseña actualizada correctamente', 'exito': True}), 200
+
+
+
+@app.route('/recuperar')
+def recuperar_contrasena():
+    return render_template('recuperar.html')
 
 
 
 #if __name__ == '__main__':
- #   with app.app_context():
-  #   db.create_all() 
-  #   app.run(debug=True)
+  #  from flask_migrate import upgrade
+  #  with app.app_context():
+  #      upgrade()
+
+
+
+if __name__ == '__main__':
+   with app.app_context():
+    db.create_all() 
+    app.run(debug=True)
